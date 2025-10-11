@@ -1,0 +1,11 @@
+node_modules
+.pnpm-store
+.nuxt
+.output
+.coverage
+.env.local
+.env.*.local
+*.log
+.DS_Store
+.idea
+.vscode
