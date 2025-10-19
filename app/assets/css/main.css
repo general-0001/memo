@@ -1,6 +1,4 @@
 @import 'tailwindcss';
-@import '@nuxt/ui';
-
 @theme {
   /* 必要に応じてテーマトークンをここで上書きする */
 }
