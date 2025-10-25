@@ -8,7 +8,7 @@
     <!--  -->
 
     <!-- ▫ 前提 ▫
-    - 重要：構造は絶対に下記の構造をできる限り厳守 / やむを得ない場合はその旨をコメントアウトで残す
+    - 重要：構造は絶対に下記の構造を厳守 / やむを得ない場合は変更を許可するが、その旨をコメントアウトで残すこと
     - リアルタイム性・リアクティブ性を重視
     - 永続化は IndexedDB を使用
     - iconは @nuxt/icon を使用
@@ -120,14 +120,14 @@
           <div class="app_iconWrap">
             <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはカテゴリーだとわかるアイコンを表示 -->
           </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
-          <div class="app_panelMemoDetailHeaderTitleText">メモのXXX</div><!-- メモの詳細・作成・編集の内容に応じてXXXを部分を変更 -->
+          <div class="app_panelMemoDetailHeaderTitleText">メモの作成</div><!-- メモの作成・編集の内容に応じて「作成」の部分は変更される -->
         </div>
         <div class="app_panelMemoDetailHeaderCategory">
           <div class="app_iconWrap">
             <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはカテゴリーで設定したアイコンを表示 -->
           </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
           <div class="app_panelMemoDetailHeaderCategoryText">カテゴリー</div><!-- 属するカテゴリーを表示 -->
-        </div><!-- クリックするとプルダウンメニューでカテゴリーのリストが表示され、カテゴリーの変更が可能 / 構造は「プルダウンの構造」を参照 -->
+        </div><!-- クリックするとポップオーバーでカテゴリーのリストが表示され、カテゴリーの変更が可能 / 構造は「ポップオーバーの構造」を参照 -->
         <div class="app_panelMemoDetailHeaderRegistration">
           <div class="app_iconWrap">
             <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは登録だとわかるアイコンを表示 -->
@@ -147,10 +147,10 @@
       <div class="app_panelMemoDetailBody">
         <div class="app_memoIconEdit app_iconWrap">
           <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / 選択したアイコンを表示 -->
-        </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする / クリックするとプルダウンメニューでアイコンのリストが表示され、アイコンの変更が可能 / 構造は「プルダウンの構造」を参照 -->
+        </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする / クリックするとポップオーバーでアイコンのリストが表示され、アイコンの変更が可能 / 構造は「ポップオーバーの構造」を参照 -->
         <div class="app_panelMemoDetailSet">
-          <div class="app_panelMemoDetailTitle">メモのタイトル</div><!-- メモのタイトルを設定 / クリックすると文字を入力できるようになり、フォーカスを外すと元に戻る -->
-          <div class="app_panelMemoDetailParagraph">メモの内容</div><!-- メモの内容を設定 / クリックすると文字を入力できるようになり、フォーカスを外すと元に戻る -->
+          <div class="app_panelMemoDetailTitle">メモのタイトル</div><!-- メモのタイトルを設定 / クリックすると文字を入力できるinputになり、フォーカスを外すとdivに戻る -->
+          <div class="app_panelMemoDetailParagraph">メモの内容</div><!-- メモの内容を設定 / クリックすると文字を入力できるinputになり、フォーカスを外すとdivに戻る -->
         </div><!-- classに「Set」がついているものは、単純に何かのまとまりという意味合い -->
       </div>
     </div>
@@ -163,7 +163,7 @@
           <div class="app_iconWrap">
             <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはカテゴリーだとわかるアイコンを表示 -->
           </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
-          <div class="app_panelCategoryDetailHeaderTitleText">カテゴリーのXXX</div><!-- カテゴリーの詳細・作成・編集の内容に応じてXXXを部分を変更 -->
+          <div class="app_panelCategoryDetailHeaderTitleText">カテゴリーの作成</div><!-- カテゴリーの作成・編集の内容に応じて「作成」の部分は変更される -->
         </div>
         <div class="app_panelCategoryDetailHeaderRegistration">
           <div class="app_iconWrap">
@@ -184,10 +184,10 @@
       <div class="app_panelCategoryDetailBody">
         <div class="app_memoIconEdit app_iconWrap">
           <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは指定したアイコンを表示 -->
-        </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする / クリックするとプルダウンメニューでアイコンのリストが表示され、アイコンの変更が可能 / 構造は「プルダウンの構造」を参照 -->
+        </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする / クリックするとポップオーバーでアイコンのリストが表示され、アイコンの変更が可能 / 構造は「ポップオーバーの構造」を参照 -->
         <div class="app_panelCategoryDetailSet">
-          <div class="app_panelCategoryDetailTitle">カテゴリーのタイトル</div><!-- メモのタイトルを設定 / クリックすると文字を入力できるようになり、フォーカスを外すと元に戻る -->
-          <div class="app_panelCategoryDetailParagraph">カテゴリーの内容</div><!-- メモの内容を設定 / クリックすると文字を入力できるようになり、フォーカスを外すと元に戻る -->
+          <div class="app_panelCategoryDetailTitle">カテゴリーのタイトル</div><!-- メモのタイトルを設定 / クリックすると文字を入力できるinputになり、フォーカスを外すとdivに戻る -->
+          <div class="app_panelCategoryDetailParagraph">カテゴリーの内容</div><!-- メモの内容を設定 / クリックすると文字を入力できるinputになり、フォーカスを外すとdivに戻る -->
         </div><!-- classに「Set」がついているものは、単純に何かのまとまりという意味合い -->
       </div>
     </div>
@@ -210,31 +210,31 @@
     </div>
     <!-- // モーダルの構造 -->
     
-    <!-- プルダウンの構造 -->
-    <div class="app_panelPulldown">
-      <input type="text" placeholder="Type a icon name…" aria-label="アイコンの検索" class="app_panelPulldownSearch"><!-- アイコンを選択するときのみ表示 / アイコンをソートする -->
-      <div class="app_panelPulldownList">
-        <div class="app_panelPulldownItem">
+    <!-- ポップオーバーの構造 -->
+    <div class="app_panelPopover">
+      <input type="text" placeholder="Type a icon name…" aria-label="アイコンの検索" class="app_panelPopoverSearch"><!-- アイコンを選択するときのみ表示 / アイコンをソートする -->
+      <div class="app_panelPopoverList">
+        <div class="app_panelPopoverItem">
           <div class="app_iconWrap">
             <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するアイコンが表示され、アイコンの場合はアイコン名に属するアイコンが表示される -->
           </div>
-          <div class="app_panelPulldownItemText">プルダウンテキスト</div><!-- テキストは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するテキストが表示され、アイコンの場合はアイコン名が表示される -->
+          <div class="app_panelPopoverItemText">ポップオーバーテキスト</div><!-- テキストは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するテキストが表示され、アイコンの場合はアイコン名が表示される -->
         </div>
-        <div class="app_panelPulldownItem">
+        <div class="app_panelPopoverItem">
           <div class="app_iconWrap">
             <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するアイコンが表示され、アイコンの場合はアイコン名に属するアイコンが表示される -->
           </div>
-          <div class="app_panelPulldownItemText">プルダウンテキスト</div><!-- テキストは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するテキストが表示され、アイコンの場合はアイコン名が表示される -->
+          <div class="app_panelPopoverItemText">ポップオーバーテキスト</div><!-- テキストは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するテキストが表示され、アイコンの場合はアイコン名が表示される -->
         </div>
-        <div class="app_panelPulldownItem">
+        <div class="app_panelPopoverItem">
           <div class="app_iconWrap">
             <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するアイコンが表示され、アイコンの場合はアイコン名に属するアイコンが表示される -->
           </div>
-          <div class="app_panelPulldownItemText">プルダウンテキスト</div><!-- テキストは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するテキストが表示され、アイコンの場合はアイコン名が表示される -->
+          <div class="app_panelPopoverItemText">ポップオーバーテキスト</div><!-- テキストは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するテキストが表示され、アイコンの場合はアイコン名が表示される -->
         </div>
-      </div><!-- アイコンの選択やカテゴリーの選択などで使用するプルダウンの構造 -->
+      </div><!-- アイコンの選択やカテゴリーの選択などで使用するポップオーバーの構造 -->
     </div>
-    <!-- プルダウンの構造 -->
+    <!-- ポップオーバーの構造 -->
 
     <!-- エラーの構造 -->
     <div class="app_panelError">
