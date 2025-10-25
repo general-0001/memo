@@ -1,5 +1,5 @@
 <template>
-  <main class="grid min-h-[60vh] place-items-center p-2 text-center">
+  <main class="grid min-h-[80vh] place-items-center p-2 text-center">
     <section class="mx-auto grid max-w-xl gap-2">
       <h1 class="text-2xl font-bold">Nuxt 開発基盤</h1>
       <p class="text-neutral-600">
