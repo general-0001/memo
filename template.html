@@ -8,12 +8,21 @@
     <!--  -->
 
     <!-- ▫ 前提 ▫
+    - 重要：構造は絶対に下記の構造をできる限り厳守 / やむを得ない場合はその旨をコメントアウトで残す
     - リアルタイム性・リアクティブ性を重視
     - 永続化は IndexedDB を使用
     - iconは @nuxt/icon を使用
-    - 大きく分類して、「メモ一覧」と「メモの詳細・作成・編集・削除」と「カテゴリーの詳細・作成・編集・削除」の三つの表示に分かれ、「メモ一覧」は「app_panelSearch」と「app_panelAddCategory」と「app_panelMemoCatalog」が「app_display」に表示され、「メモの詳細・作成・編集・削除」は「app_panelSearch」と「app_panelMemoDetail」が表示され、「カテゴリーの詳細・作成・編集・削除」は「app_panelSearch」と「app_panelMemoDetail」が表示される。
-    - 重要：tailwindのclassやstyleはユーザーが行うため、それ以外の部分のみを実装すること / やむを得ない場合は必要最低限の設定のみに留めること
-    - 重要：構造は絶対に下記の構造を厳守、勝手に追加や変更をしてはならない / やむを得ない場合はその旨をコメントアウトで残すこと
+    - 大きく分類しメモの一覧」と「メモの詳細・作成・編集・削除」と「カテゴリーの詳細・作成・編集・削除」の三つの表示に分かメモの一覧」は「app_panelSearch」と「app_panelAddCategory」と「app_panelMemoCatalog」が「app_display」に表示され、「メモの詳細・作成・編集・削除」は「app_panelSearch」と「app_panelMemoDetail」が表示され、「カテゴリーの詳細・作成・編集・削除」は「app_panelSearch」と「app_panelMemoDetail」が表示される。
+    - それぞれの表示urlを発行して、リアクティブ・リアルタイムだけれどちゃんと戻れるようにする
+    - 表示は登録された順序で表示される
+    - メモやカテゴリーの内容に「#tag」といったハッシュタグのような文章がある場合、タグとして扱う
+    - broadcastchannelを使用して複数タブに対応
+    - 検索の範囲はカテゴリーとメモのタイトルと内容で、一致条件は部分一致になる（メモが一つも検索に含まれなかった場合はそのカテゴリー全てを非表示にするようにする）
+    - 必須フィールドはなく、空のデータの場合は「データがありません」等のテキストを表示させる。
+    - tailwindのclassのmarginやpaddingやgapやspaceなどの余白は基本的にp-2などの「2」をベースにする
+    - サンプルのデータとして、初期データの投入を行う
+    - エクスポートとインポートは今は考えてはいないが、追加する可能性がある
+    - バリデーションは考えていないが、追加する可能性がある
     -->
 
     <!-- コンテンツを表示するセクション -->
@@ -25,8 +34,8 @@
     <!-- 検索フォームの構造　/　「class="app_display"」の一番上に常に設置 -->
     <div class="app_panelSearch">
       <div class="app_iconWrap">
-        <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは虫眼鏡のアイコンを使用 -->
-      </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+        <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは表示によって切り替り、メモの一覧の時は虫眼鏡のアイコンを表示され、それメモの一覧以外では「<」のような前の表示に戻るアイコンが表示される -->
+      </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする / メモの一覧以外の表示でアイコンが「<」のような表示なっている場合、クリックすると前の表示戻る -->
       <input type="text" placeholder="Type a search…" aria-label="検索" class="app_panelSearchForm"><!-- サーチフォームを表示 -->
     </div>
     <!-- // 検索フォームの構造 -->
@@ -140,8 +149,8 @@
           <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは更新だとわかるアイコンを表示 -->
         </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする / クリックするとプルダウンメニューでアイコンのリストが表示され、アイコンの変更が可能 / 構造は「プルダウンの構造」を参照 -->
         <div class="app_panelMemoDetailSet">
-          <div class="app_panelMemoDetailTitle">メモのタイトル</div><!-- メモのタイトルを設定 -->
-          <div class="app_panelMemoDetailParagraph">メモの内容</div><!-- メモの内容を設定 -->
+          <div class="app_panelMemoDetailTitle">メモのタイトル</div><!-- メモのタイトルを設定 / クリックすると文字を入力できるようになり、フォーカスを外すと元に戻る -->
+          <div class="app_panelMemoDetailParagraph">メモの内容</div><!-- メモの内容を設定 / クリックすると文字を入力できるようになり、フォーカスを外すと元に戻る -->
         </div><!-- classに「Set」がついているものは、単純に何かのまとまりという意味合い -->
       </div>
     </div>
@@ -177,8 +186,8 @@
           <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは更新だとわかるアイコンを表示 -->
         </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする / クリックするとプルダウンメニューでアイコンのリストが表示され、アイコンの変更が可能 / 構造は「プルダウンの構造」を参照 -->
         <div class="app_panelCategoryDetailSet">
-          <div class="app_panelCategoryDetailTitle">カテゴリーのタイトル</div><!-- メモのタイトルを設定 -->
-          <div class="app_panelCategoryDetailParagraph">カテゴリーの内容</div><!-- メモの内容を設定 -->
+          <div class="app_panelCategoryDetailTitle">カテゴリーのタイトル</div><!-- メモのタイトルを設定 / クリックすると文字を入力できるようになり、フォーカスを外すと元に戻る -->
+          <div class="app_panelCategoryDetailParagraph">カテゴリーの内容</div><!-- メモの内容を設定 / クリックすると文字を入力できるようになり、フォーカスを外すと元に戻る -->
         </div><!-- classに「Set」がついているものは、単純に何かのまとまりという意味合い -->
       </div>
     </div>
@@ -199,10 +208,11 @@
         ...<!-- ここに内容の確認（OKやCansellなど）を行う要素を設置 -->
       </div>
     </div>
-    <!-- モーダルの構造 -->
+    <!-- // モーダルの構造 -->
     
     <!-- プルダウンの構造 -->
     <div class="app_panelPulldown">
+      <input type="text" placeholder="Type a icon name…" aria-label="アイコンの検索" class="app_panelPulldownSearch"><!-- アイコンを選択するときのみ表示 / アイコンをソートする -->
       <div class="app_panelPulldownList">
         <div class="app_panelPulldownItem">
           <div class="app_iconWrap">
@@ -222,9 +232,18 @@
           </div>
           <div class="app_panelPulldownItemText">プルダウンテキスト</div><!-- テキストは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するテキストが表示され、アイコンの場合はアイコン名が表示される -->
         </div>
-      </div>
+      </div><!-- アイコンの選択やカテゴリーの選択などで使用するプルダウンの構造 -->
     </div>
     <!-- プルダウンの構造 -->
+
+    <!-- エラーの構造 -->
+    <div class="app_panelError">
+      <div class="app_iconWrap">
+        <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはエラーのアイコンを表示 -->
+      </div>
+      <div class="app_panelErrorText">エラーの内容</div><!-- エラーの内容を表示 -->
+    </div>
+    <!-- // エラーの構造 -->
 
   </body>
 </html>
