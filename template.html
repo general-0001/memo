@@ -5,163 +5,226 @@
   </head>
   <body>
 
-    <!-- メモ一覧部分の構造 -->
-    <app_memoList>
-      <app_category>
-        <app_categoryHeading>
-          <app_categoryIcon><!-- 選択したカテゴリーのアイコンを表示 -->
-          <app_categoryHeadingTitle>カテゴリー_1</app_categoryHeadingTitle><!-- 設定したカテゴリーのタイトルを表示 -->
-          <app_categoryHeadingExplanation>カテゴリーの説明_カテゴリーの説明_カテゴリーの説明</app_categoryHeadingExplanation><!-- 設定したカテゴリーの説明を表示/説明が何もない場合は非表示になる -->
-          <app_categoryEditIcon><!-- カテゴリーの編集するアイコンを表示/各「app_category」にhoverすると表示される -->
-        </app_categoryHeading>
+    <!--  -->
 
-        <app_categoryMemoList>
-          <app_categoryMemoListItem>
-            <app_categoryMemoListHeading>
-              <app_categoryMemoIcon><!-- 選択したメモのアイコンを表示 -->
-              <app_categoryMemoListHeadingText>カテゴリー_1_メモ_1</app_categoryMemoListHeadingText><!-- 設定したメモのタイトルを表示 -->
-            </app_categoryMemoListHeading>
-            <app_categoryMemoListParagraph>
-              <app_categoryMemoListParagraphText>カテゴリー_1_メモ_1_本文<app_categoryMemoListParagraphText><!-- 設定したメモの本文を表示/領域外に出たテキストは3点リーダー（...）にする -->
-            </app_categoryMemoListParagraph>
-          </app_categoryMemoListItem>
+    <!-- ▫ 前提 ▫
+    - リアルタイム性・リアクティブ性を重視
+    - 永続化は IndexedDB を使用
+    - iconは @nuxt/icon を使用
+    - 大きく分類して、「メモ一覧」と「メモの詳細・作成・編集・削除」と「カテゴリーの詳細・作成・編集・削除」の三つの表示に分かれ、「メモ一覧」は「app_panelSearch」と「app_panelAddCategory」と「app_panelMemoCatalog」が「app_display」に表示され、「メモの詳細・作成・編集・削除」は「app_panelSearch」と「app_panelMemoDetail」が表示され、「カテゴリーの詳細・作成・編集・削除」は「app_panelSearch」と「app_panelMemoDetail」が表示される。
+    - 重要：tailwindのclassやstyleはユーザーが行うため、それ以外の部分のみを実装すること / やむを得ない場合は必要最低限の設定のみに留めること
+    - 重要：構造は絶対に下記の構造を厳守、勝手に追加や変更をしてはならない / やむを得ない場合はその旨をコメントアウトで残すこと
+    -->
 
-          <app_categoryMemoListItem>
-            <app_categoryMemoListHeading>
-              <app_categoryMemoIcon><!-- 選択したメモのアイコンを表示 -->
-              <app_categoryMemoListHeadingText>カテゴリー_1_メモ_2</app_categoryMemoListHeadingText><!-- 設定したメモのタイトルを表示 -->
-            </app_categoryMemoListHeading>
-            <app_categoryMemoListParagraph>
-              <app_categoryMemoListParagraphText>カテゴリー_1_メモ_2_本文<app_categoryMemoListParagraphText><!-- 設定したメモの本文を表示/領域外に出たテキストは3点リーダー（...）にする -->
-            </app_categoryMemoListParagraph>
-          </app_categoryMemoListItem>
+    <!-- コンテンツを表示するセクション -->
+    <div class="app_display">
+      ...<!-- ここにそれぞれの構造が切り替わって表示される / 切り替わりの際はフェーズアウトとフェーズインで切り替わる -->
+    </div>
+    <!-- // コンテンツを表示するセクション -->
 
-          <app_categoryMemoListItem>
-            <app_categoryMemoListHeading>
-              <app_categoryMemoIcon><!-- 選択したメモのアイコンを表示 -->
-              <app_categoryMemoListHeadingText>カテゴリー_1_メモ_3</app_categoryMemoListHeadingText><!-- 設定したメモのタイトルを表示 -->
-            </app_categoryMemoListHeading>
-            <app_categoryMemoListParagraph>
-              <app_categoryMemoListParagraphText>カテゴリー_1_メモ_3_本文<app_categoryMemoListParagraphText><!-- 設定したメモの本文を表示/領域外に出たテキストは3点リーダー（...）にする -->
-            </app_categoryMemoListParagraph>
-          </app_categoryMemoListItem>
-        </app_categoryMemoList>
+    <!-- 検索フォームの構造　/　「class="app_display"」の一番上に常に設置 -->
+    <div class="app_panelSearch">
+      <div class="app_iconWrap">
+        <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは虫眼鏡のアイコンを使用 -->
+      </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+      <input type="text" placeholder="Type a search…" aria-label="検索" class="app_panelSearchForm"><!-- サーチフォームを表示 -->
+    </div>
+    <!-- // 検索フォームの構造 -->
 
-        <app_categoryAddMemo>
-          <app_categoryAddMemoIcon><!-- メモを追加する際のテキストのアイコンを表示 -->
-          <app_categoryAddMemoText>「xxx」のメモを追加</app_categoryAddMemoText><!-- 「xxx」はカテゴリー名が表示される/クリックすると「メモ詳細部分の構造」に移動する -->
-        </app_categoryAddMemo>
-      </app_category>
+    <!-- カテゴリーの追加ボタン / 「app_panelMemoCatalog」とは独立しているが、メモの一覧が表示されている時、「app_panelSearch」と「app_panelMemoCatalog」の間に設置される -->
+    <div class="app_panelAddCategory">
+      <div class="app_iconWrap">
+        <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは虫眼鏡のアイコンを使用 -->
+      </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+      <div class="app_panelAddCategoryTitle">
+        <div class="app_panelAddCategoryText">カテゴリーを追加</div>
+      </div>
+    </div>
+    <!-- カテゴリーの追加ボタン -->
 
-      <app_category>
-        <app_categoryHeading>
-          <app_categoryIcon><!-- 選択したカテゴリーのアイコンを表示 -->
-          <app_categoryHeadingTitle>カテゴリー_2</app_categoryHeadingTitle><!-- 設定したカテゴリーのタイトルを表示 -->
-          <app_categoryHeadingExplanation>カテゴリーの説明_カテゴリーの説明_カテゴリーの説明</app_categoryHeadingExplanation><!-- 設定したカテゴリーの説明を表示/説明が何もない場合は非表示になる -->
-          <app_categoryEditIcon><!-- カテゴリーの編集するアイコンを表示/各「app_category」にhoverすると表示される -->
-        </app_categoryHeading>
+    <!-- メモの一覧の構造 -->
+    <div class="app_panelMemoCatalog">
+      <div class="app_panelMemoCatalogCategory">
+        <div class="app_panelMemoCatalogHeader">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはユーザーが選んだカテゴリーのアイコンを表示 -->
+          </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+          <div class="app_panelMemoCatalogHeaderSet">
+            <div class="app_panelMemoCatalogTitle">カテゴリーのタイトル_A</div><!-- 設定したカテゴリーのタイトルを表示 / 設定されていない場合は「カテゴリーのタイトルが設定されていません」などのテキストを表示 -->
+            <div class="app_panelMemoCatalogParagraph">カテゴリーの内容</div><!-- 設定したカテゴリーの内容を表示 / 設定されていない場合は「カテゴリーの内容が設定されていません」などのテキストを表示 -->
+          </div><!-- classに「Set」がついているものは、単純に何かのまとまりという意味合い -->
+        </div>
 
-        <app_categoryMemoList>
-          <app_categoryMemoListItem>
-            <app_categoryMemoListHeading>
-              <app_categoryMemoIcon><!-- 選択したメモのアイコンを表示 -->
-              <app_categoryMemoListHeadingText>カテゴリー_2_メモ_1</app_categoryMemoListHeadingText><!-- 設定したメモのタイトルを表示 -->
-            </app_categoryMemoListHeading>
-            <app_categoryMemoListParagraph>
-              <app_categoryMemoListParagraphText>カテゴリー_2_メモ_1_本文<app_categoryMemoListParagraphText><!-- 設定したメモの本文を表示/領域外に出たテキストは3点リーダー（...）にする -->
-            </app_categoryMemoListParagraph>
-          </app_categoryMemoListItem>
+        <div class="app_panelMemoCatalogBody">
+          <div class="app_panelMemoCatalogBodyList">
+            <div class="app_panelMemoCatalogBodyItem">
+              <div class="app_iconWrap">
+                <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはユーザーが選んだメモのアイコンを表示 -->
+              </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+              <div class="app_panelMemoCatalogBodySet">
+                <div class="app_panelMemoCatalogBodyTitle">メモのタイトル_1</div><!-- 設定したメモのタイトルを表示 / 設定されていない場合は「メモのタイトルが設定されていません」などのテキストを表示 -->
+                <div class="app_panelMemoCatalogBodyParagraph">メモの内容_1</div><!-- 設定したメモの内容を表示 / 設定されていない場合は「メモの内容が設定されていません」などのテキストを表示 -->
+              </div><!-- classに「Set」がついているものは、単純に何かのまとまりという意味合い -->
+              <div class="app_iconWrap">
+                <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはクリックしてコンテンツが切り替わることがわかるように「>」のようなアイコンを表示 -->
+              </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+            </div>
 
-          <app_categoryMemoListItem>
-            <app_categoryMemoListHeading>
-              <app_categoryMemoIcon><!-- 選択したメモのアイコンを表示 -->
-              <app_categoryMemoListHeadingText>カテゴリー_2_メモ_2</app_categoryMemoListHeadingText><!-- 設定したメモのタイトルを表示 -->
-            </app_categoryMemoListHeading>
-            <app_categoryMemoListParagraph>
-              <app_categoryMemoListParagraphText>カテゴリー_2_メモ_2_本文<app_categoryMemoListParagraphText><!-- 設定したメモの本文を表示/領域外に出たテキストは3点リーダー（...）にする -->
-            </app_categoryMemoListParagraph>
-          </app_categoryMemoListItem>
+            <div class="app_panelMemoCatalogItem">
+              <div class="app_iconWrap">
+                <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはユーザーが選んだメモのアイコンを表示 -->
+              </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+              <div class="app_panelMemoCatalogBodyTitle">メモのタイトル_2</div><!-- 設定したメモのタイトルを表示 / 設定されていない場合は「メモのタイトルが設定されていません」などのテキストを表示 -->
+              <div class="app_panelMemoCatalogBodyParagraph">メモの内容_2</div><!-- 設定したメモの内容を表示 / 設定されていない場合は「メモの内容が設定されていません」などのテキストを表示 -->
+              <div class="app_iconWrap">
+                <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはクリックしてコンテンツが切り替わることがわかるように「>」のようなアイコンを表示 -->
+              </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+            </div>
 
-          <app_categoryMemoListItem>
-            <app_categoryMemoListHeading>
-              <app_categoryMemoIcon><!-- 選択したメモのアイコンを表示 -->
-              <app_categoryMemoListHeadingText>カテゴリー_2_メモ_3</app_categoryMemoListHeadingText><!-- 設定したメモのタイトルを表示 -->
-            </app_categoryMemoListHeading>
-            <app_categoryMemoListParagraph>
-              <app_categoryMemoListParagraphText>カテゴリー_2_メモ_3_本文<app_categoryMemoListParagraphText><!-- 設定したメモの本文を表示/領域外に出たテキストは3点リーダー（...）にする -->
-            </app_categoryMemoListParagraph>
-          </app_categoryMemoListItem>
-        </app_categoryMemoList>
+            <div class="app_panelMemoCatalogItem">
+              <div class="app_iconWrap">
+                <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはユーザーが選んだメモのアイコンを表示 -->
+              </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+              <div class="app_panelMemoCatalogBodyTitle">メモのタイトル_3</div><!-- 設定したメモのタイトルを表示 / 設定されていない場合は「メモのタイトルが設定されていません」などのテキストを表示 -->
+              <div class="app_panelMemoCatalogBodyParagraph">メモの内容_3</div><!-- 設定したメモの内容を表示 / 設定されていない場合は「メモの内容が設定されていません」などのテキストを表示 -->
+              <div class="app_iconWrap">
+                <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはクリックしてコンテンツが切り替わることがわかるように「>」のようなアイコンを表示 -->
+              </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+            </div>
+          </div>
+        </div>
 
-        <app_categoryAddMemo>
-          <app_categoryAddMemoIcon><!-- メモを追加する際のテキストのアイコンを表示 -->
-          <app_categoryAddMemoText>「xxx」のメモを追加</app_categoryAddMemoText><!-- 「xxx」はカテゴリー名が表示される/クリックすると「メモ詳細部分の構造」に移動する -->
-        </app_categoryAddMemo>
-      </app_category>
+        <div class="app_panelMemoCatalogFooter">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは追加とわかるように「+」のアイコンを表示 -->
+          </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+          <div class="">メモを追加</div>
+        </div>
+      </div>
+    </div>
+    <!-- // メモの一覧の構造 -->
 
-      <app_addCategory>
-        <app_addCategoryIcon><!-- カテゴリーを追加する際のテキストのアイコンを表示 -->
-        <app_addCategoryText>カテゴリーを追加</app_addCategoryText><!-- カテゴリーを追加する際のテキストが表示される -->
-      </app_addCategory>
-    </app_memoList>
-    <!-- // メモ一覧部分の構造 -->
+    <!-- メモの詳細・作成・編集・削除部分の構造 / 基本的には「カテゴリーの詳細・作成・編集・削除部分の構造」とほぼ同じ -->
+    <div class="app_panelMemoDetail">
+      <div class="app_panelMemoDetailHeader">
+        <div class="app_panelMemoDetailHeaderTitle">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはカテゴリーだとわかるアイコンを表示 -->
+          </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+          <div class="app_panelMemoDetailHeaderTitleText">メモのXXX</div><!-- メモの詳細・作成・編集の内容に応じてXXXを部分を変更 -->
+        </div>
+        <div class="app_panelMemoDetailHeaderCategory">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはカテゴリーで設定したアイコンを表示 -->
+          </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+          <div class="app_panelMemoDetailHeaderCategoryText">カテゴリー</div><!-- 属するカテゴリーを表示 -->
+        </div><!-- クリックするとプルダウンメニューでカテゴリーのリストが表示され、カテゴリーの変更が可能 / 構造は「プルダウンの構造」を参照 -->
+        <div class="app_panelMemoDetailHeaderRegistration">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは登録だとわかるアイコンを表示 -->
+          </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+          <div class="app_panelMemoDetailHeaderRegistrationText">2000.1.1(mon)</div><!-- 登録日を表示 -->
+        </div>
+        <div class="app_panelMemoDetailHeaderUpdate">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは更新だとわかるアイコンを表示 -->
+          </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+          <div class="app_panelMemoDetailHeaderUpdateText">2000.1.8(mon)</div><!-- 更新日を表示 -->
+        </div>
+        <div class="app_memoDelete app_iconWrap">
+          <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはゴミ箱のアイコンを表示 -->
+        </div><!-- 「app_memoDelete」をクリックすると該当するメモを削除する / 削除はモーダルを挟んで、許可された場合のみ削除を行う / @nuxt/icon のラッパー / 必ずiconはラップする -->
+      </div>
+      <div class="app_panelMemoDetailBody">
+        <div class="app_memoIconEdit app_iconWrap">
+          <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは更新だとわかるアイコンを表示 -->
+        </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする / クリックするとプルダウンメニューでアイコンのリストが表示され、アイコンの変更が可能 / 構造は「プルダウンの構造」を参照 -->
+        <div class="app_panelMemoDetailSet">
+          <div class="app_panelMemoDetailTitle">メモのタイトル</div><!-- メモのタイトルを設定 -->
+          <div class="app_panelMemoDetailParagraph">メモの内容</div><!-- メモの内容を設定 -->
+        </div><!-- classに「Set」がついているものは、単純に何かのまとまりという意味合い -->
+      </div>
+    </div>
+    <!-- // メモの詳細・作成・編集・削除部分の構造 -->
 
-    <!-- メモ詳細部分の構造（閲覧・追加・編集を含む）/メモ一覧のメモかメモの追加をクリックするとこの部分にきりかわる -->
-    <app_memoDetail>
-      <app_memoDetailHeader>
-        <app_memoDetailRegistration>
-          <app_memoDetailRegistrationIcon><!-- // メモの登録日のアイコンを表示 -->
-          <app_memoDetailRegistrationText>2000.1.1(mon)</app_memoDetailRegistrationText>
-        </app_memoDetailRegistration>
-        <app_memoDetailUpdate>
-          <app_memoDetailUpdateIcon><!-- // メモの更新日のアイコンを表示 -->
-          <app_memoDetailUpdateText>2000.1.8(mon)</app_memoDetailUpdateText>
-        </app_memoDetailUpdate>
-        <app_memodetailDeleteIcon><!-- // メモを削除する際のアイコンを表示 -->
-        <app_memodetailExportIcon><!-- // メモをエクスポートする際のアイコンを表示 -->
-      </app_memoDetailHeader>
-      <app_memoDetailBody>
-        <app_memoDetailHeading>
-          <app_memoDetailIcon><!-- // 選択したメモのアイコンを表示 -->
-          <app_memoDetailHeadingText>カテゴリー_1_メモ_1</app_memoDetailHeadingText><!-- // メモのタイトルを表示/追加時は「メモのタイトルを入力」と表示される/クリックすると編集することができる -->
-        </app_memoDetailHeading>
-        <app_memoDetailParagraph>
-          <app_memoDetailParagraphText>カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文_カテゴリー_1_メモ_1_本文<app_memoDetailParagraphText><!-- // メモの本文を表示/追加時は「メモの内容を入力」と表示される/クリックすると編集することができる -->
-        </app_memoDetailParagraph>
-      </app_memoDetailBody>
-    </app_memoDetail>
-    <!-- // メモ詳細部分の構造 -->
+    <!-- カテゴリーの詳細・作成・編集・削除部分の構造 -->
+    <div class="app_panelCategoryDetail">
+      <div class="app_panelCategoryDetailHeader">
+        <div class="app_panelCategoryDetailHeaderTitle">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはカテゴリーだとわかるアイコンを表示 -->
+          </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+          <div class="app_panelCategoryDetailHeaderTitleText">カテゴリーのXXX</div><!-- カテゴリーの詳細・作成・編集の内容に応じてXXXを部分を変更 -->
+        </div>
+        <div class="app_panelCategoryDetailHeaderRegistration">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは登録だとわかるアイコンを表示 -->
+          </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+          <div class="app_panelCategoryDetailHeaderRegistrationText">2000.1.1(mon)</div><!-- 登録日を表示 -->
+        </div>
+        <div class="app_panelCategoryDetailHeaderUpdate">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは更新だとわかるアイコンを表示 -->
+          </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする -->
+          <div class="app_panelCategoryDetailHeaderUpdateText">2000.1.8(mon)</div><!-- 更新日を表示 -->
+        </div>
+        <div class="app_memoDelete app_iconWrap">
+          <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはゴミ箱のアイコンを表示 -->
+        </div><!-- 「app_memoDelete」をクリックすると該当するメモを削除する / 削除はモーダルを挟んで、許可された場合のみ削除を行う / @nuxt/icon のラッパー / 必ずiconはラップする -->
+      </div>
+      <div class="app_panelCategoryDetailBody">
+        <div class="app_memoIconEdit app_iconWrap">
+          <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは更新だとわかるアイコンを表示 -->
+        </div><!-- @nuxt/icon のラッパー / 必ずiconはラップする / クリックするとプルダウンメニューでアイコンのリストが表示され、アイコンの変更が可能 / 構造は「プルダウンの構造」を参照 -->
+        <div class="app_panelCategoryDetailSet">
+          <div class="app_panelCategoryDetailTitle">カテゴリーのタイトル</div><!-- メモのタイトルを設定 -->
+          <div class="app_panelCategoryDetailParagraph">カテゴリーの内容</div><!-- メモの内容を設定 -->
+        </div><!-- classに「Set」がついているものは、単純に何かのまとまりという意味合い -->
+      </div>
+    </div>
+    <!-- // カテゴリーの詳細・作成・編集・削除部分の構造 -->
 
-    <!-- カテゴリーの登録や編集部分の構造/カテゴリーの追加や編集 -->
-    <app_categoryEdit>
-      <app_categoryEditHeading>
-        <app_categoryEditIcon><!-- // カテゴリーを作成する際のタイトルのアイコンを表示 -->
-        <app_categoryEditHeadingText>カテゴリーを作成</app_categoryEditHeadingText><!-- // カテゴリーを作成する際のタイトルを表示/編集時は「カテゴリーのxxxを編集」と表示され、「xxx」にはカテゴリー名が表示される -->
-      </app_categoryEditHeading>
-
-      <app_categoryEditTitle>
-        <app_categoryMemoIcon><!-- 作成または編集するカテゴリーのアイコンを表示/アイコンを選択していない場合は初期状態のアイコンが表示され、変更したい場合はアイコンをクリックするとポップオーバーでアイコンのリストが表示され、好きなアイコンを選択できる -->
-        <app_categoryEditTitleText>カテゴリーのタイトルを入力</app_categoryEditTitleText><!-- 登録するカテゴリーのタイトルを編集する/何も入力していない場合は「カテゴリーのタイトルを入力」と表示される -->
-      </app_categoryEditTitle>
-
-      <app_categoryEditParagraph>
-        <app_categoryEditParagraphText>カテゴリーの説明を入力<app_categoryEditParagraphText><!-- 登録するカテゴリーの説明を編集する/何も入力していない場合は「カテゴリーの説明を入力」と表示される -->
-      </app_categoryEditParagraph>
-
-      <app_categoryDelete>
-        <app_categoryDeleteIcon><!-- カテゴリーを削除する際のアイコンを表示 -->
-        <app_categoryDeleteText>削除</app_categoryDeleteText>
-      </app_categoryDelete><!-- カテゴリーの編集時に表示される -->
-    </app_categoryEdit>
-    <!-- // カテゴリーの編集部分の構造 -->
-
-    <!-- モーダル -->
-    <app_modal>
-      <app_modalTitle>タイトル</app_modalTitle>
-      <app_modalText>テキスト</app_modalText>
-      <app_modalButton>ボタン</app_modalButton>
-    </app_modal>
-    <!-- // モーダル -->
+    <!-- モーダルの構造 -->
+    <div class="app_panelModal">
+      <div class="app_panelModalHeader">
+        <div class="app_panelModalHeaderTitle">モーダルのタイトル</div>
+        <div class="app_iconWrap">
+          <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンはバツマークのアイコンを使用 -->
+        </div>
+      </div>
+      <div class="app_panelModalBody">
+        ...<!-- ここにモーダルの内容を表示 / 表示と非表示になる際はフェーズアウトとフェーズインで切り替わる -->
+      </div>
+      <div class="app_panelModalFooter">
+        ...<!-- ここに内容の確認（OKやCansellなど）を行う要素を設置 -->
+      </div>
+    </div>
+    <!-- モーダルの構造 -->
+    
+    <!-- プルダウンの構造 -->
+    <div class="app_panelPulldown">
+      <div class="app_panelPulldownList">
+        <div class="app_panelPulldownItem">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するアイコンが表示され、アイコンの場合はアイコン名に属するアイコンが表示される -->
+          </div>
+          <div class="app_panelPulldownItemText">プルダウンテキスト</div><!-- テキストは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するテキストが表示され、アイコンの場合はアイコン名が表示される -->
+        </div>
+        <div class="app_panelPulldownItem">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するアイコンが表示され、アイコンの場合はアイコン名に属するアイコンが表示される -->
+          </div>
+          <div class="app_panelPulldownItemText">プルダウンテキスト</div><!-- テキストは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するテキストが表示され、アイコンの場合はアイコン名が表示される -->
+        </div>
+        <div class="app_panelPulldownItem">
+          <div class="app_iconWrap">
+            <span class="iconify" aria-hidden="true"></span><!-- @nuxt/icon のアイコンを表示 / アイコンは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するアイコンが表示され、アイコンの場合はアイコン名に属するアイコンが表示される -->
+          </div>
+          <div class="app_panelPulldownItemText">プルダウンテキスト</div><!-- テキストは内容に応じて変化 / カテゴリーの場合はカテゴリーに属するテキストが表示され、アイコンの場合はアイコン名が表示される -->
+        </div>
+      </div>
+    </div>
+    <!-- プルダウンの構造 -->
 
   </body>
 </html>
