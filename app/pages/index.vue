@@ -1,17 +1,25 @@
+<script setup lang="ts">
+import AppPanelSearch from '@/components/app/AppPanelSearch.vue'
+import AppPanelAddCategory from '@/components/app/AppPanelAddCategory.vue'
+import AppPanelMemoCatalog from '@/components/app/AppPanelMemoCatalog.vue'
+import { useMemoAppStore } from '@/features/app/application/memoApp.store'
+
+const store = useMemoAppStore()
+</script>
+
 <template>
-  <main class="grid min-h-[80vh] place-items-center p-2 text-center">
-    <section class="mx-auto grid max-w-xl gap-2">
-      <h1 class="text-2xl font-bold">Nuxt 開発基盤</h1>
-      <p class="text-neutral-600">
-        これが初期セットアップ済みの Nuxt 4 アプリです。
-      </p>
-      <p class="text-neutral-600">
-        開発サーバーは
-        <code
-          class="rounded bg-neutral-100 inline-block mx-2 p-2 font-mono text-sm text-neutral-600"
-        >pnpm dev</code>
-        で起動できます。
-      </p>
-    </section>
-  </main>
+  <div class="app_display">
+    <AppPanelSearch />
+    <AppPanelAddCategory />
+    <AppPanelMemoCatalog />
+  </div>
+
+  <transition name="app_fade">
+    <div v-if="store.errorMessage" class="app_panelError" role="alert">
+      <div class="app_iconWrap">
+        <Icon name="material-symbols:error-outline-rounded" size="20" aria-hidden="true" />
+      </div>
+      <div class="app_panelErrorText">{{ store.errorMessage }}</div>
+    </div>
+  </transition>
 </template>

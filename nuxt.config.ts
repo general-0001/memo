@@ -2,7 +2,7 @@ import { defineNuxtConfig } from 'nuxt/config'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
-  modules: ['@pinia/nuxt', '@vueuse/nuxt'],
+  modules: ['@pinia/nuxt', '@vueuse/nuxt', '@nuxt/icon'],
   devtools: {
     enabled: true,
   },
@@ -17,6 +17,12 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-10-20',
   vite: {
     plugins: [tailwindcss()],
+  },
+  icon: {
+    serverBundle: {
+      collections: ['material-symbols'],
+    },
+    mode: 'css',
   },
   typescript: {
     strict: true,

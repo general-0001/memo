@@ -1,121 +1,130 @@
-# Handover Report（技術・製品非依存雛形） — [プロジェクト名]
+# Handover Report — Memo Workspace (Nuxt 4 / IndexedDB)
 
-> 目的: 新任のAI/開発者が「現状把握→実行環境準備→動作確認→タスク再開」を短時間で行えるよう、全体像/現状/設計/実装/既知事項/次アクションを一枚に集約する。技術・製品に依存しない記述を徹底し、8品質特性（実用性/複雑性制御/汎用性/柔軟性/拡張性/堅牢性/安全性/効率性）のバランスを明示する（MUST）。
-
----
-
-## 0. 使い方（MUST）
-- 本雛形をコピーし、[こういう記法] のプレースホルダを具体値で置換。
-- 30分以内に再開できる密度で記述（冗長さ回避）。
-- 未確定事項は「18. オープン課題」に集約し、期日/責任者/依存を付与。
-- ファイル/コマンド/設定はパスまたはスニペットを添付（MUST）。
+> 目的: 新任AI/開発者が「現状把握→環境セットアップ→動作確認→改修再開」を 30 分以内で完了できるよう、プロジェクトの構造・状態・課題・次アクションを一枚に集約する。
 
 ---
 
 ## 1. スナップショット（概要）
-- プロジェクト: [識別子/名称]
-- ミッション/成果物: [目的/期待価値/測定指標]
-- 現在フェーズ: [Draft/Ready/In Dev/Released]
-- スコープ / 非対象: [対象] / [外すもの]
-- 制約/前提: [期間/予算/依存/規制]
-- 主要リンク: [要件] / [設計] / [タスクボード] / [ロードマップ]
+- **プロジェクト**: Memo Workspace（Nuxt 4 + Tailwind v4 + Pinia + IndexedDB）
+- **ミッション/成果物**: ブラウザ単体で完結するメモ/カテゴリー管理UI。リアクティブ切替・タグ抽出・複数タブ同期・Material Line Icons準拠。
+- **現在フェーズ**: In Dev（UI/ステート/永続化は稼働、エクスポートや詳細バリデーションは未実装）
+- **スコープ**: メモ一覧（`app_panelSearch/app_panelAddCategory/app_panelMemoCatalog`）、メモ詳細CRUD、カテゴリー詳細CRUD、IndexedDB永続化、BroadcastChannel同期。
+- **非対象**: サーバーAPI、エクスポート/インポート、認証、複雑なバリデーション。
+- **制約**: Nuxt 4.1.3 / Vue 3.5.22 / Tailwind v4 / IndexedDB (Dexie 4.2.1) / Material Line Icons。UI構造は `template.html` の `app_*` クラスを絶対遵守。
+- **主要リンク**: `docs/plan.md`, `docs/features.md#feat-feat-100`, `docs/architecture/structure-hybrid.md`, `template.html`.
 
 ## 2. ステークホルダーと役割（RACI）
-- R= [実行責任] / A= [最終責任] / C= [協議] / I= [通知]
-- 決定ログ（ADR）: [場所/命名規約]
+- **R（Responsible）**: 現行AI開発担当（実装・テスト・ドキュメント）
+- **A（Accountable）**: ユーザー/プロダクトオーナー
+- **C（Consulted）**: 将来のQA、デザイナ、Sec/Compliance
+- **I（Informed）**: 運用担当（将来想定）
+- **決定ログ**: `docs/plan.md` (設計計画), `docs/features.md` (FEAT-100 定義), この `handover.md`.
 
-## 3. 品質バランス（8品質特性）
-- 実用性: 重み=[%] 目標=[例: 現実制約下で2週間以内にMVP] 指標=[例: 導入時間]
-- 複雑性制御: 重み=[%] 目標=[モジュール化/循環依存ゼロ] 指標=[循環検出/レビュー指標]
-- 汎用性: 重み=[%] 目標=[複数環境/規模で再利用] 指標=[移植作業量]
-- 柔軟性: 重み=[%] 目標=[要件変更をN日以内で反映] 指標=[変更所要時間]
-- 拡張性: 重み=[%] 目標=[新機能追加に伴う影響最小化] 指標=[影響範囲/公開API変更数]
-- 堅牢性: 重み=[%] 目標=[デグレード/再試行/冪等性] 指標=[MTTR/失敗率]
-- 安全性: 重み=[%] 目標=[最小権限/監査/データ分類] 指標=[セキュリティ欠陥件数]
-- 効率性: 重み=[%] 目標=[資源/レイテンシ予算内] 指標=[P95/CPU/メモリ]
+## 3. 8品質特性バランス
+| 特性 | 重み | 目標/指標 |
+| --- | --- | --- |
+| 実用性 | 20% | IndexedDBベースで即時利用可能、初期データ自動投入 |
+| 複雑性制御 | 15% | ハイブリッド構造（features/* 内レイヤ）/ `app_*`コンポーネント分離 |
+| 汎用性 | 10% | サーバーレス構成、Nuxt + Tailwind のベストプラクティス |
+| 柔軟性 | 10% | BroadcastChannel/タグ抽出で将来拡張を想定 |
+| 拡張性 | 15% | Dexieスキーマ/Piniaユースケース層、AppPanel Modal/Popoverの再利用 |
+| 堅牢性 | 10% | IndexedDBエラー通知、フォーカストラップ、検索条件の安全処理 |
+| 安全性 | 5% | ローカル利用前提、将来のデータ分類/暗号化は未定 |
+| 効率性 | 15% | ローカルDBで遅延ほぼゼロ、UIはTailwind v4 utilityで軽量 |
 
-## 4. アーキテクチャ（プロダクト非依存）
-- システム境界/コンテキスト: [外部/内部境界、責務分割]
-- 構成要素と責務: [コンポーネント/モジュール/レイヤと役割]
-- 依存と制約: [依存方向/循環禁止/契約の安定化]
-- 連携方式: [同期API/非同期イベント/バッチ/ファイル]
-- データフロー/状態管理: [所有/一貫性/整合性モデル]
-- 設計原則: [例: KISS/DRY/SRP/SOLID/YAGNI]
+## 4. アーキテクチャ（ハイブリッド: スライス内レイヤ）
+- **構成**: `app/features/{app|categories|memos}/{presentation,application,domain,infrastructure}`、共通ユーティリティは `app/shared/*`。
+- **UIレイヤ**: `app/components/app/AppPanel*.vue` と `app/pages/*` が `template.html` 構造を忠実に実装。
+- **アプリケーション層**: Dexieベースのユースケース（CRUD/TAG抽出/検索/BroadcastChannel）をPiniaストア `memoApp.store.ts` に統合。
+- **ドメイン/データ**: `shared/types/memo.ts` 定義、`shared/infrastructure/db.ts` + `sample-data.ts` + `broadcast.ts`。
+- **依存ルール**: Presentation → Application → Domain、Infrastructure → Application/Domain。Feature間直接依存禁止（sharedのみ）。
 
-## 5. インターフェース契約（UI/API/イベント/CLI/ファイル）
-- UI: [主要画面/フロー/入力検証/ナビゲーション原則]
-- API: [エンドポイント/メソッド/DTO/ステータス/エラー方針]
-- イベント: [トピック/バージョン/順序/再送/冪等]
-- CLI/ファイル: [入出力/スキーマ/バージョニング]
-- 後方互換/バージョニング方針: [セマンティック/契約テスト]
+## 5. インターフェース契約（UI）
+- **ルート**: `/`（一覧）、`/memos/[id|new]`, `/categories/[id|new]`。
+- **UI要素**: `app_panelSearch`（検索+戻るボタン）、`app_panelAddCategory`、`app_panelMemoCatalog`、`app_panelMemoDetail`、`app_panelCategoryDetail`、`app_panelModal`、`app_panelPopover`、`app_panelError`。
+- **操作**: すべてNuxt組み込みルーター＋`<Icon>`（@nuxt/icon）で描画。ポップオーバー/モーダルはARIA属性付与済。
+- **API/外部I/O**: なし（IndexedDBのみ）。
 
 ## 6. データ/スキーマ/永続化
-- エンティティ/値オブジェクト: [名称/定義]
-- スキーマ/バリデーション: [検証ルール/境界値]
-- 永続化モデル: [テーブル/コレクション/インデックス/一貫性]
-- マッピング: [DTO ↔ Domain ↔ Persistence]
+- **DB**: IndexedDB 名 `memo_app_v1`（Dexie 4.2.1）。
+- **テーブル**: `categories`, `memos`, `settings`。登録順は `createdAt` ISO文字列で制御。
+- **サンプルデータ**: `shared/infrastructure/sample-data.ts` で初回起動時に Inbox/Planning/Research/Sync要件のメモを投入。
+- **タグ抽出**: `shared/utils/tags.ts` (`/#([\p{L}\p{N}_-]+)/giu`) で `#tag` 形式をユニーク化。
 
-## 7. ユースケース / ワークフロー / UX
-- 代表ユースケース（Given-When-Then）: [最低3件]
-- 画面/フロー/状態遷移: [要約図または説明]
+## 7. ユースケース / ワークフロー
+1. メモ一覧表示（初回はサンプル）→ 検索/タグ/カテゴリごとに折りたたまれたカードで表示。
+2. `カテゴリーを追加` → 詳細ビューでタイトル/本文/アイコンを設定し作成。作成後 `/categories/:id` へ遷移。
+3. 各カテゴリの `メモを追加` → `/memos/new?category=:id` で作成。完了後 `/memos/:id`。
+4. アイコン/カテゴリー選択ポップオーバーはフォーカストラップ付きでEsc/外側クリック/ドラッグ対応。
+5. BroadcastChannel で CRUD を他タブに通知し、`memoApp.store` が自動再読込。
 
-## 8. セキュリティ / プライバシー / コンプライアンス
-- 認証/認可/最小権限/職務分掌
-- データ分類/保持/削除/暗号化/監査
-- 規制準拠: [該当する場合の基準]
+## 8. セキュリティ / プライバシー
+- 認証/認可は未実装。ローカルブラウザ専用。
+- 将来、PIIを扱う場合は暗号化/アクセス制御を追加する想定。
 
 ## 9. レジリエンス / 回復性
-- エラー分類（ドメイン/アプリ/インフラ）
-- タイムアウト/リトライ（指数+ジッタ）/サーキットブレーカ/バルクヘッド
-- デグレード/冪等性/順序保証方針
+- IndexedDB例外時に UI 下部 `app_panelError` を表示（フェードイン/out）。
+- BroadcastChannel 非対応環境ではフォールバック未実装（課題）。`memoApp.store` を経由して手動 `refreshFromDb()` で回復可。
+- モーダル/ポップオーバーはEscや外側クリックで必ず閉じる。
 
-## 10. パフォーマンス / SLI/SLO / 容量計画
-- 主要SLI: [レイテンシ/スループット/リソース]
-- SLO: [目標値/測定方法]
-- 容量/負荷/ストレス/耐久テスト計画
+## 10. パフォーマンス / 容量
+- 全データはローカルDBで即時アクセス。主要操作は`memoApp.store` の計算量O(n)。
+- Nuxt Devサーバでは `pnpm dev` 実行後 `http://localhost:3000` で約200ms以内に初期表示。
+- SLO（暫定）: 一覧表示 < 100ms（IndexedDB読み出し）、CRUD < 150ms（Dexie + UI更新）。
 
 ## 11. 観測性 / 運用
-- ログ/メトリクス/トレース/アラート
-- ダッシュボード/ランブック/相関ID
-- 運用体制/エスカレーション/変更管理
+- 監視未整備。Nuxt DevToolsログとブラウザコンソールのみ。
+- 将来: Dexie操作ラッパに計測hookを追加、Playwright自動E2EをCI化。
 
-## 12. A11y / i18n / SEO（該当時）
-- アクセシビリティ基準/配慮事項
-- 多言語/地域差/通貨/時刻/暦
-- 検索最適化/構造化データ
+## 12. A11y / i18n / SEO
+- UIテキストは日本語。`AppPanelModal/AppPanelPopover` は `role="dialog"` + `aria-modal` + フォーカストラップ済。
+- i18n/SEOは未着手（SPAローカル用途）。
 
-## 13. 実行環境 / 構築・実行・配布（非依存）
-- 環境: [ローカル/CI/ステージング/本番 と必要権限]
-- 依存関係: [ランタイム/パッケージ/外部サービス（名称は一般名で）]
-- セットアップ: `[インストールコマンド]` / `[環境変数]`
-- 実行: `[起動コマンド]` → [アクセス方法]
-- 検証: `[健全性チェック/自己診断の手順]`
-- 配布/ロールバック: [手順/キルスイッチ]
+## 13. 実行環境 / セットアップ
+```bash
+pnpm install          # 依存パッケージ
+pnpm dev              # http://localhost:3000 で起動
+pnpm typecheck        # vue-tsc strict
+```
+- IndexedDB を初期化したい場合: ブラウザコンソールで `indexedDB.deleteDatabase('memo_app_v1')`。
+- Playwright MCP で手動検証済（カテゴリー/メモ作成・検索・削除・モーダル操作）。
 
-## 14. テスト戦略 / 受け入れ基準
-- 階層: 単体/統合/契約/E2E/セキュリティ/性能/回帰
-- データ: テストデータ/マスキング/決定性
-- 受け入れ基準: [Pass条件/否決条件/計測方法]
+## 14. テスト戦略 / 実施状況
+- **実施済み**: `pnpm typecheck`, 手動Playwright検証（UI遷移/CRUD/アクセシビリティ確認）。
+- **未実施**: 自動Vitest/Playwright suites、性能/負荷試験。
+- **優先テスト**:
+  1. Dexie CRUDユースケースのユニットテスト。
+  2. PlaywrightでE2E（メモ/カテゴリー作成→検索→削除）。
+  3. BroadcastChannel同期の多ウィンドウ試験。
 
 ## 15. リスク / 失敗モード
-- リスク一覧（確率×影響×検知/緩和）
-- 既知の技術的負債/回避策/返済計画
+- IndexedDB非対応環境（プライベートモード等）→ UIがエラーで停止。現在は警告表示のみに留まる。
+- BroadcastChannel未サポートブラウザ → 同期不可（フォールバック未実装）。
+- 大量データ時のパフォーマンス検証未実施。
+- エクスポート/インポート未実装のため、データ移行手段なし。
 
-## 16. 次アクション（再開計画・優先度順）
-- High: [次アクション#1 — 根拠/期待効果/完了条件]
-- Medium: [次アクション#2]
-- Low/将来: [段階導入/フィーチャーフラグ/連携]
+## 16. 次アクション（優先度順）
+1. **High**: `docs/features.md` のFEAT-100を詳細化しながら、Vitest/Playwright自動テストを追加。CI (`pnpm typecheck && pnpm test`) を整備。
+2. **High**: BroadcastChannel非対応ブラウザ向けフォールバック（timer-based refresh）と通知UI。
+3. **Medium**: エクスポート/インポート仕様・UI設計、IndexedDBスキーマversion 2の計画。
+4. **Medium**: バリデーション（文字数/必須/タグ制限）とユーザーフィードバック（Toast）。
+5. **Low**: 観測性（ローカルストレージで操作ログ）とi18n下準備。
 
 ## 17. 変更履歴（短縮）
-- 直近主要変更: [種別(scope): 概要]
-- 備考: [背景/影響]
+- 2025-10-26: メモアプリUI/IndexedDB/BroadcastChannel実装、AppPanelModal/Popoverのアクセシビリティ刷新、Playwrightで動作検証。
+- 2025-10-26: `docs/features.md` に FEAT-100 を追記。本 `handover.md` を初回作成。
 
-## 18. オープン課題 / 未決定事項
-- [課題] — [期日] / [責任者] / [依存関係]
+## 18. オープン課題 / 未決事項
+- エクスポート/インポート機能の仕様とファイル形式。
+- BroadcastChannel非対応時のフォールバック実装方針。
+- 自動テスト/CI環境の整備。
+- 認証・マルチユーザー要件の有無。
+- 将来のデータ暗号化/セキュリティ要件。
 
 ---
 
-クイックスタート（要約）
-- 依存を準備 → `[インストールコマンド]`
-- 起動 → `[起動コマンド]` / 監視 → `[健全性チェック]`
-- 受入テスト → `[コマンド/手順]` を通過したら作業再開
+## クイックスタート
+1. `pnpm install && pnpm dev`
+2. ブラウザで `http://localhost:3000` を開く
+3. IndexedDBを再初期化したい場合はコンソールで `indexedDB.deleteDatabase('memo_app_v1')`
+4. `pnpm typecheck`（＋将来の `pnpm test`）を実行してから開発を開始

@@ -12,6 +12,7 @@
 |---|---|---|---|---|---|---|---|
 | FEAT-XXX | 例: 注文管理 | Template | 主要ユースケースの要約 | Draft | Name | High | #feat-feat-xxx |
 | FEAT-001 | 注文管理 | Sample | 注文の作成/参照/更新/取消 | Draft | Owner | High | #feat-feat-001 |
+| FEAT-100 | メモワークスペース | MVP | IndexedDBベースのメモ/カテゴリー管理UI | In Dev | AI開発担当 | High | #feat-feat-100 |
 
 - 追加時は下記テンプレートで節を作成し、上表に行を1件追記（MUST）
 
@@ -202,3 +203,63 @@
 - トレーサビリティが双方向に張られている（MUST）
 
 ---
+
+## 4. 実装中 Feature: メモワークスペース（FEAT-100） {#feat-feat-100}
+
+### 4.1 メタ情報
+- Feature ID: FEAT-100
+- 名称: メモワークスペース
+- ステータス: In Dev（ローカルUI/IndexedDB実装完了、残課題あり）
+- オーナー/ステークホルダー（RACI）: R=AI開発担当 / A=ユーザー（プロダクトオーナー） / C=将来のQA・デザイナ / I=運用
+- 最終更新日: 2025-10-26
+- 関連ドキュメント: `docs/plan.md`, `docs/architecture/structure-hybrid.md`, `template.html`
+
+### 4.2 目的・価値・成果指標
+- 目的: IndexedDB/ブラウザのみでメモとカテゴリーをリアクティブに管理する。
+- 価値: オフライン環境でも利用できる情報整理ツール。BroadcastChannel で複数タブ同期。
+- KPI例: メモ登録/一覧表示成功率 99%+, 操作レイテンシ < 100ms（体感）、検索レスポンス即時（IndexedDBローカル）。
+
+### 4.3 スコープ / 非対象
+- スコープ: メモ一覧（`app_panelSearch/app_panelAddCategory/app_panelMemoCatalog`）、メモ詳細CRUD、カテゴリー詳細CRUD、タグ抽出、検索、初期データ投入、マルチタブ同期。
+- 非対象: サーバー永続化、エクスポート/インポート、認証、詳細なバリデーション（将来追加予定）。
+- 制約: IndexedDB (Dexie) のみ、Material Line Icons、Tailwind `2`スケール、Nuxt4。
+
+### 4.4 インターフェース契約
+- UIルート:
+  - `/`: メモ一覧ビュー。
+  - `/memos/[id]`: メモ詳細/編集 (`[id]=new` で作成)。
+  - `/categories/[id]`: カテゴリー詳細/編集 (`[id]=new` で作成)。
+- 画面構造は `template.html` の `app_*` クラスを忠実に再現。モーダル/ポップオーバーは `AppPanelModal/AppPanelPopover` を介してARIA属性とフォーカストラップを付与。
+- API/イベントは無し（クライアント内完結）。
+
+### 4.5 データ契約 / 永続化
+- IndexedDB `memo_app_v1`:
+  - `categories`: `{ id, title, body, icon, tags[], createdAt, updatedAt }`
+  - `memos`: `{ id, categoryId, title, body, icon, tags[], createdAt, updatedAt }`
+  - `settings`: `{ id:'app', sampleSeeded, lastSync }`
+- Dexieを利用し、CRUDユースケースは `app/features/*/application` 層に配置。タグは `shared/utils/tags.ts` で `#word` を正規表現抽出。
+
+### 4.6 ビジネスルール / ポリシー
+- 登録順表示（`createdAt` 昇順）。
+- タグ抽出: 本文やカテゴリー説明内の `#tag` をユニーク化し、検索で利用。
+- 検索ロジック: カテゴリー／メモ双方のタイトル・本文に部分一致。メモヒットゼロのカテゴリーは非表示。空結果時は「データがありません」表示。
+- 必須入力なし。空セルは定型文メッセージで可視化。
+
+### 4.7 エラー / 回復性
+- IndexedDBエラーは `memoApp.store.ts` で捕捉し、`app_panelError` に表示。
+- BroadcastChannelで他タブ更新通知。受信できない場合は `refreshFromDb()` をフォールバック。
+- 操作中にDB削除が発生した場合（例: テストリセット）も再シードされる。
+
+### 4.8 セキュリティ / プライバシー
+- ローカルOnly。認証なし。機微データは想定していないが、今後導入する場合は暗号化/権限管理を追加する。
+
+### 4.9 テスト / 受け入れ
+- 型検査: `pnpm typecheck`（vue-tsc strict mode）。
+- 手動E2E（Playwright MCP）: カテゴリー/メモ追加・検索・モーダル/ポップオーバー操作・削除、アイコン切替を確認。
+- 今後: Vitest + Happy DOM でユースケース単体テスト、Playwright自動E2Eを整備予定。
+
+### 4.10 未決事項 / 次アクション
+- エクスポート/インポートの仕様定義。
+- 入力バリデーション/ヒントメッセージの整理。
+- BroadcastChannel非対応ブラウザ向けフォールバック（ポーリング等）。
+- 観測性: DevToolsログ以外にメトリクスを持たないため、将来PWA計測を追加。
