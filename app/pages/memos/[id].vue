@@ -177,13 +177,13 @@ const formatDate = (value: string | null) => {
 </script>
 
 <template>
-  <div class="app_display">
+  <div class="app_display flex flex-col min-h-0 text-sm">
     <AppPanelSearch />
 
-    <div class="app_panelMemoDetail">
-      <div class="app_panelMemoDetailHeader">
-        <div class="app_panelMemoDetailHeaderTitle">
-          <div class="app_iconWrap">
+    <div class="app_panelMemoDetail overflow-y-auto">
+      <div class="app_panelMemoDetailHeader flex gap-4 p-2 border-b border-slate-200 opacity-50">
+        <div class="app_panelMemoDetailHeaderTitle flex items-center gap-2">
+          <div class="app_iconWrap flex items-center">
             <Icon name="material-symbols:edit-note-rounded" size="20" aria-hidden="true" />
           </div>
           <div class="app_panelMemoDetailHeaderTitleText">
@@ -191,9 +191,9 @@ const formatDate = (value: string | null) => {
           </div>
         </div>
         <div class="relative">
-          <button class="app_panelMemoDetailHeaderCategory" type="button" @click="showCategoryPopover = !showCategoryPopover">
-            <div class="app_iconWrap">
-              <Icon :name="selectedCategory?.icon || 'material-symbols:folder-open-rounded'" size="20" aria-hidden="true" />
+          <button class="app_panelMemoDetailHeaderCategory flex items-center gap-2" type="button" @click="showCategoryPopover = !showCategoryPopover">
+            <div class="app_iconWrap flex items-center">
+              <Icon :name="selectedCategory?.icon || 'material-symbols:folder-open-rounded'" aria-hidden="true" />
             </div>
             <div class="app_panelMemoDetailHeaderCategoryText">
               {{ selectedCategory?.title || 'カテゴリー' }}
@@ -223,27 +223,27 @@ const formatDate = (value: string | null) => {
             </div>
           </AppPanelPopover>
         </div>
-        <div class="app_panelMemoDetailHeaderRegistration">
-          <div class="app_iconWrap">
-            <Icon name="material-symbols:event-available-rounded" size="20" aria-hidden="true" />
+        <div class="app_panelMemoDetailHeaderRegistration items-center flex gap-2">
+          <div class="app_iconWrap flex items-center">
+            <Icon name="material-symbols:event-available-rounded" aria-hidden="true" />
           </div>
           <div class="app_panelMemoDetailHeaderRegistrationText">{{ formatDate(createdAt) }}</div>
         </div>
-        <div class="app_panelMemoDetailHeaderUpdate">
+        <div class="app_panelMemoDetailHeaderUpdate flex items-center">
           <div class="app_iconWrap">
-            <Icon name="material-symbols:update-rounded" size="20" aria-hidden="true" />
+            <Icon name="material-symbols:update-rounded" aria-hidden="true" />
           </div>
           <div class="app_panelMemoDetailHeaderUpdateText">{{ formatDate(updatedAt) }}</div>
         </div>
-        <button class="app_memoDelete app_iconWrap" type="button" @click="showDeleteModal = true">
-          <Icon name="material-symbols:delete-outline-rounded" size="20" aria-hidden="true" />
+        <button class="app_memoDelete app_iconWrap ml-auto flex items-center cursor-pointer opacity-50" type="button" @click="showDeleteModal = true">
+          <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
         </button>
       </div>
 
-      <div class="app_panelMemoDetailBody">
+      <div class="app_panelMemoDetailBody bg-white p-2 flex gap-2 border-b border-slate-200">
         <div class="relative">
-          <button class="app_memoIconEdit app_iconWrap" type="button" @click="showIconPopover = !showIconPopover">
-            <Icon :name="memoForm.icon" size="24" aria-hidden="true" />
+          <button class="app_memoIconEdit app_iconWrap py-1.5 text-2xl cursor-pointer flex items-center" type="button" @click="showIconPopover = !showIconPopover">
+            <Icon :name="memoForm.icon" aria-hidden="true" />
           </button>
 
           <AppPanelPopover
@@ -291,10 +291,10 @@ const formatDate = (value: string | null) => {
         </div>
       </div>
 
-      <div class="flex justify-end gap-2">
+      <div class="flex justify-end gap-2 p-2">
         <button
           type="button"
-          class="px-4 py-2 rounded-lg border border-slate-200"
+          class="p-2 rounded-lg bg-white border border-slate-200 cursor-pointer"
           @click="router.push('/')"
           :disabled="pending"
         >
@@ -302,7 +302,7 @@ const formatDate = (value: string | null) => {
         </button>
         <button
           type="button"
-          class="px-4 py-2 rounded-lg bg-slate-900 text-white disabled:opacity-60"
+          class="p-2 rounded-lg bg-slate-800 text-white disabled:opacity-50 cursor-pointer"
           @click="saveMemo"
           :disabled="pending"
         >

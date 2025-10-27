@@ -9,9 +9,9 @@ const handleClick = () => {
 </script>
 
 <template>
-  <div class="app_panelAddCategory" role="button" tabindex="0" @click="handleClick" @keydown.enter.prevent="handleClick">
-    <div class="app_iconWrap">
-      <Icon name="material-symbols:add-rounded" size="20" aria-hidden="true" />
+  <div class="app_panelAddCategory p-2 border-b border-slate-200 flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-slate-200" role="button" tabindex="0" @click="handleClick" @keydown.enter.prevent="handleClick">
+    <div class="app_iconWrap flex items-center bg-black rounded text-white">
+      <Icon name="material-symbols:add-rounded" aria-hidden="true" />
     </div>
     <div class="app_panelAddCategoryTitle">
       <div class="app_panelAddCategoryText">カテゴリーを追加</div>

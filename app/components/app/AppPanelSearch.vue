@@ -30,16 +30,16 @@ const handleIconClick = () => {
 </script>
 
 <template>
-  <div class="app_panelSearch">
-    <button type="button" class="app_iconWrap" @click="handleIconClick" :aria-label="isCatalog ? '検索' : '戻る'">
-      <Icon :name="iconName" size="20" />
+  <div class="app_panelSearch w-full bg-white border-b border-slate-200 relative flex items-center">
+    <button type="button" class="app_iconWrap p-2 absolute flex items-center cursor-pointer" @click="handleIconClick" :aria-label="isCatalog ? '検索' : '戻る'">
+      <Icon :name="iconName" class="text-2xl" />
     </button>
     <input
       v-model="query"
       type="text"
       placeholder="Type a search…"
       aria-label="検索"
-      class="app_panelSearchForm"
+      class="app_panelSearchForm w-full py-4 pl-10 pr-4 text-ellipsis border-0 appearance-none focus:outline-none transition-colors"
     />
   </div>
 </template>

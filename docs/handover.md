@@ -43,6 +43,7 @@
 - **ルート**: `/`（一覧）、`/memos/[id|new]`, `/categories/[id|new]`。
 - **UI要素**: `app_panelSearch`（検索+戻るボタン）、`app_panelAddCategory`、`app_panelMemoCatalog`、`app_panelMemoDetail`、`app_panelCategoryDetail`、`app_panelModal`、`app_panelPopover`、`app_panelError`。
 - **操作**: すべてNuxt組み込みルーター＋`<Icon>`（@nuxt/icon）で描画。ポップオーバー/モーダルはARIA属性付与済。
+- **UI強化**: 一覧ヘッダー/行は `transition-colors` でホバー時にフェードし、右端に補助アイコン（編集/遷移）を表示。`app_panelAddCategory` も hover でインジケータが出る。
 - **API/外部I/O**: なし（IndexedDBのみ）。
 
 ## 6. データ/スキーマ/永続化
@@ -52,9 +53,9 @@
 - **タグ抽出**: `shared/utils/tags.ts` (`/#([\p{L}\p{N}_-]+)/giu`) で `#tag` 形式をユニーク化。
 
 ## 7. ユースケース / ワークフロー
-1. メモ一覧表示（初回はサンプル）→ 検索/タグ/カテゴリごとに折りたたまれたカードで表示。
+1. メモ一覧表示（初回はサンプル）→ 検索/タグ/カテゴリごとにカード表示。カテゴリー行をクリックすると `/categories/:id` 詳細へ遷移し、右端のインジケータで編集可能なことを示す。
 2. `カテゴリーを追加` → 詳細ビューでタイトル/本文/アイコンを設定し作成。作成後 `/categories/:id` へ遷移。
-3. 各カテゴリの `メモを追加` → `/memos/new?category=:id` で作成。完了後 `/memos/:id`。
+3. 各カテゴリの `メモを追加` → `/memos/new?category=:id` で作成。メモ行はタイトル/本文を横並び表示し、長文は三点リーダーで省略。完了後 `/memos/:id`。
 4. アイコン/カテゴリー選択ポップオーバーはフォーカストラップ付きでEsc/外側クリック/ドラッグ対応。
 5. BroadcastChannel で CRUD を他タブに通知し、`memoApp.store` が自動再読込。
 
@@ -113,6 +114,7 @@ pnpm typecheck        # vue-tsc strict
 ## 17. 変更履歴（短縮）
 - 2025-10-26: メモアプリUI/IndexedDB/BroadcastChannel実装、AppPanelModal/Popoverのアクセシビリティ刷新、Playwrightで動作検証。
 - 2025-10-26: `docs/features.md` に FEAT-100 を追記。本 `handover.md` を初回作成。
+- 2025-10-26: 一覧UIの視覚強化（ホバー演出・ヘッダ遷移・リスト省略表示）と関連ドキュメントを更新。
 
 ## 18. オープン課題 / 未決事項
 - エクスポート/インポート機能の仕様とファイル形式。
