@@ -230,7 +230,7 @@ const formatDate = (value: string | null) => {
           <div class="app_panelMemoDetailHeaderRegistrationText">{{ formatDate(createdAt) }}</div>
         </div>
         <div class="app_panelMemoDetailHeaderUpdate flex items-center">
-          <div class="app_iconWrap">
+          <div class="app_iconWrap flex items-center">
             <Icon name="material-symbols:update-rounded" aria-hidden="true" />
           </div>
           <div class="app_panelMemoDetailHeaderUpdateText">{{ formatDate(updatedAt) }}</div>
