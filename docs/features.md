@@ -229,7 +229,7 @@
   - `/`: メモ一覧ビュー。
   - `/memos/[id]`: メモ詳細/編集 (`[id]=new` で作成)。
   - `/categories/[id]`: カテゴリー詳細/編集 (`[id]=new` で作成)。
-- 画面構造は `template.html` の `app_*` クラスを忠実に再現。モーダル/ポップオーバーは `AppPanelModal/AppPanelPopover` を介してARIA属性とフォーカストラップを付与。
+- 画面構造は `template.html` の `app_*` クラスを忠実に再現。モーダル/ポップオーバーは `AppPanelModal/AppPanelPopover` を介してARIA属性とフォーカストラップを付与。ポップオーバーは Teleport で `body` 直下に描画され、トリガー要素の座標からオフセット計算して上下を自動反転する。
 - API/イベントは無し（クライアント内完結）。
 
 ### 4.5 データ契約 / 永続化
@@ -256,7 +256,7 @@
 
 ### 4.9 テスト / 受け入れ
 - 型検査: `pnpm typecheck`（vue-tsc strict mode）。
-- 手動E2E（Playwright MCP）: カテゴリー/メモ追加・検索・モーダル/ポップオーバー操作・削除、アイコン切替を確認。
+- 手動E2E（Playwright MCP）: カテゴリー/メモ追加・検索・モーダル/ポップオーバー操作（アンカー位置・フォールバック含む）・削除、アイコン切替を確認。
 - 今後: Vitest + Happy DOM でユースケース単体テスト、Playwright自動E2Eを整備予定。
 
 ### 4.10 未決事項 / 次アクション

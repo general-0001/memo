@@ -43,7 +43,7 @@
 - **ルート**: `/`（一覧）、`/memos/[id|new]`, `/categories/[id|new]`。
 - **ページ構造**: 各 Nuxt ページは Feature プレゼンテーション (`MemoWorkspacePage`, `MemoDetailPage`, `CategoryDetailPage`) を描画。
 - **UI要素**: `app_panelSearch`, `app_panelAddCategory`, `app_panelMemoCatalog`, `app_panelMemoDetail`, `app_panelCategoryDetail`, `app_panelModal`, `app_panelPopover`, `app_panelError`。
-- **操作**: Nuxt ルーターと @nuxt/icon を利用。モーダル/ポップオーバーは focus trap + ARIA 属性を保持。
+- **操作**: Nuxt ルーターと @nuxt/icon を利用。モーダル/ポップオーバーは focus trap + ARIA 属性を保持し、ポップオーバーは Teleport で `body` 直下に描画・トリガー座標からオフセット計算（上下自動反転）する。
 
 ## 6. データ/永続化
 - **DB**: IndexedDB 名 `memo_app_v1`（Dexie 4.2.1）。テーブル: `categories`, `memos`, `settings`。
@@ -100,6 +100,7 @@ pnpm typecheck        # vue-tsc strict
 - BroadcastChannel 未サポート → 同期不可（フォールバック未実装）。
 - 大量データ時のパフォーマンス未検証。
 - エクスポート/インポート未実装のため、データ移行手段なし。
+- Tailwind v4 の `@layer components` は現状ビルド出力に乗らないため、共通スタイルはユーティリティクラス併用で管理（将来対応時の移行方針要確認）。
 
 ## 16. 次アクション（優先度順）
 1. **High**: Dexie リポジトリ/ポートに対する自動テストと依存検証の追加。CI で `pnpm typecheck && pnpm test` を整備。

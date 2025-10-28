@@ -21,7 +21,6 @@
   .app_panelMemoDetail,
   .app_panelCategoryDetail,
   .app_panelModal,
-  .app_panelPopover,
   .app_panelError {
     @apply bg-white rounded-xl border border-slate-200 shadow-sm;
   }
@@ -68,8 +67,12 @@
     @apply bg-white rounded-xl p-4 shadow-lg;
   }
 
-  .app_panelPopover {
-    @apply absolute bg-white border border-slate-200 rounded-lg shadow-lg p-2 space-y-2;
+  .app_panelPopoverList {
+    @apply space-y-1;
+  }
+
+  .app_panelPopoverItem {
+    @apply rounded-lg transition-colors;
   }
 
   .app_panelError {

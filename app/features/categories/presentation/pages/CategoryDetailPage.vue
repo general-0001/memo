@@ -33,6 +33,7 @@ const updatedAt = ref<string | null>(null)
 const pending = ref(false)
 const errorMessage = ref<string | null>(null)
 const showIconPopover = ref(false)
+const iconButtonRef = ref<HTMLElement | null>(null)
 const iconSearch = ref('')
 const showDeleteModal = ref(false)
 
@@ -162,13 +163,19 @@ const confirmDeletion = async () => {
 
       <div class="app_panelCategoryDetailBody bg-white p-2 flex gap-2 border-b border-slate-200">
         <div class="relative">
-          <button class="app_memoIconEdit app_iconWrap py-1.5 text-2xl cursor-pointer flex items-center" type="button" @click="showIconPopover = !showIconPopover">
+          <button
+            ref="iconButtonRef"
+            class="app_memoIconEdit app_iconWrap py-1.5 text-2xl cursor-pointer flex items-center"
+            type="button"
+            @click="showIconPopover = !showIconPopover"
+          >
             <Icon :name="categoryForm.icon" aria-hidden="true" />
           </button>
           <AppPanelPopover
             v-model="showIconPopover"
             aria-label="カテゴリーアイコン選択"
-            :style="{ top: 'calc(100% + 0.5rem)', left: '0' }"
+            :anchor="iconButtonRef"
+            :offset="12"
           >
             <input
               v-model="iconSearch"

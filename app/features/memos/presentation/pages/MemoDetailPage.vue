@@ -35,6 +35,8 @@ const updatedAt = ref<string | null>(null)
 
 const showCategoryPopover = ref(false)
 const showIconPopover = ref(false)
+const categoryButtonRef = ref<HTMLElement | null>(null)
+const iconButtonRef = ref<HTMLElement | null>(null)
 const iconSearch = ref('')
 const showDeleteModal = ref(false)
 const pending = ref(false)
@@ -191,7 +193,12 @@ const formatDate = (value: string | null) => {
           </div>
         </div>
         <div class="relative">
-          <button class="app_panelMemoDetailHeaderCategory flex items-center gap-2" type="button" @click="showCategoryPopover = !showCategoryPopover">
+          <button
+            ref="categoryButtonRef"
+            class="app_panelMemoDetailHeaderCategory flex items-center gap-2"
+            type="button"
+            @click="showCategoryPopover = !showCategoryPopover"
+          >
             <div class="app_iconWrap flex items-center">
               <Icon :name="selectedCategory?.icon || 'material-symbols:folder-open-rounded'" aria-hidden="true" />
             </div>
@@ -203,7 +210,8 @@ const formatDate = (value: string | null) => {
           <AppPanelPopover
             v-model="showCategoryPopover"
             aria-label="カテゴリー選択"
-            :style="{ top: 'calc(100% + 0.5rem)', left: '0' }"
+            :anchor="categoryButtonRef"
+            :offset="12"
           >
             <div class="app_panelPopoverList space-y-1">
               <div
@@ -242,14 +250,20 @@ const formatDate = (value: string | null) => {
 
       <div class="app_panelMemoDetailBody bg-white p-2 flex gap-2 border-b border-slate-200">
         <div class="relative">
-          <button class="app_memoIconEdit app_iconWrap py-1.5 text-2xl cursor-pointer flex items-center" type="button" @click="showIconPopover = !showIconPopover">
+          <button
+            ref="iconButtonRef"
+            class="app_memoIconEdit app_iconWrap py-1.5 text-2xl cursor-pointer flex items-center"
+            type="button"
+            @click="showIconPopover = !showIconPopover"
+          >
             <Icon :name="memoForm.icon" aria-hidden="true" />
           </button>
 
           <AppPanelPopover
             v-model="showIconPopover"
             aria-label="アイコン選択"
-            :style="{ top: 'calc(100% + 0.5rem)', left: '0' }"
+            :anchor="iconButtonRef"
+            :offset="12"
           >
             <input
               v-model="iconSearch"
