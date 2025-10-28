@@ -5,6 +5,6 @@ import IndexPage from '~/pages/index.vue'
 describe('IndexPage', () => {
   it('見出しを描画できる', () => {
     const wrapper = mount(IndexPage)
-    expect(wrapper.text()).toContain('Nuxt 開発基盤')
+    expect(wrapper.text()).toContain('カテゴリーを追加')
   })
 })

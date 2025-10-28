@@ -10,7 +10,7 @@
 - **現在フェーズ**: In Dev（UI/ステート/永続化は稼働、アーキテクチャ再編済み、エクスポートや詳細バリデーションは未実装）
 - **スコープ**: メモ一覧（`app_panelSearch/app_panelAddCategory/app_panelMemoCatalog`）、メモ詳細CRUD、カテゴリー詳細CRUD、IndexedDB永続化、BroadcastChannel同期。
 - **非対象**: サーバーAPI、エクスポート/インポート、認証、複雑なバリデーション。
-- **制約**: Nuxt 4.1.3 / Vue 3.5.22 / Tailwind v4 / Dexie 4.2.1 / Material Line Icons。UI構造は `template.html` の `app_*` クラスを厳守。
+- **制約**: Nuxt 4.2.0 / Vue 3.5.22 / Tailwind v4.1.16 / Dexie 4.2.1 / Material Line Icons。UI構造は `template.html` の `app_*` クラスを厳守。
 - **主要リンク**: `docs/plan.md`, `docs/features.md#feat-feat-100`, `docs/architecture/structure-hybrid.md`, `docs/plan-refactoring.md`, `template.html`。
 
 ## 2. ステークホルダーと役割（RACI）
