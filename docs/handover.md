@@ -45,7 +45,9 @@
 - **ページ構造**: 各 Nuxt ページは Feature プレゼンテーション (`MemoWorkspacePage`, `MemoDetailPage`, `CategoryDetailPage`) を描画。
 - **UI要素**: `app_panelSearch`, `app_panelAddCategory`, `app_panelMemoCatalog`, `app_panelMemoDetail`, `app_panelCategoryDetail`, `app_panelModal`, `app_panelPopover`, `app_panelError`。
 - **スタイル適用**: 各パネル/ボタンは `bg-white border border-slate-200 rounded-xl shadow-sm` などをコンポーネント側で付与し、`template.html` との対応を維持しつつ局所的に調整可能な構成。
+- **検索ハイライト**: カタログ上の一致箇所を `<mark class="app_searchHighlight">` で包み、視覚的に検索キーワードを強調。
 - **操作**: Nuxt ルーターと @nuxt/icon を利用。モーダル/ポップオーバーは focus trap + ARIA 属性を保持し、ポップオーバーは Teleport で `body` 直下に描画・トリガー座標からオフセット計算（上下自動反転）する。
+- **削除操作**: カテゴリー/メモの新規作成画面では削除ボタンを表示せず、既存エンティティのみ削除ダイアログを呼び出せる。
 
 ## 6. データ/永続化
 - **DB**: IndexedDB 名 `memo_app_v1`（Dexie 4.2.1）。テーブル: `categories`, `memos`, `settings`。
@@ -113,7 +115,7 @@ pnpm typecheck        # vue-tsc strict
 6. **Low**: 観測性（操作ログ/メトリクス）の整備と i18n 下準備。
 
 ## 17. 変更履歴（短縮）
-- 2025-10-28: モーダルオーバーレイの視覚不具合を修正し、`main.css` を最小化。各 `AppPanel*` コンポーネントへ Tailwind ユーティリティを移し替え、Playwright MCP でページ表示とモーダル挙動を再確認。
+- 2025-10-28: モーダルオーバーレイの視覚不具合を修正し、`main.css` を最小化。各 `AppPanel*` コンポーネントへ Tailwind ユーティリティを移し替え、検索ヒット箇所に `<mark>` 強調を導入。新規作成時の削除ボタンを非表示化し、Playwright MCP でページ表示・モーダル挙動・検索ハイライトを再確認。
 - 2025-10-27: Feature内レイヤ構造へ再編。Dexieリポジトリ/Syncサービス導入、モーダル等プレゼンテーションを Feature 配下へ移動、`docs/plan-refactoring.md` を作成。
 - 2025-10-26: メモアプリUI/IndexedDB/BroadcastChannel実装、AppPanelModal/Popoverのアクセシビリティ刷新、Playwrightで動作検証。
 - 2025-10-26: `docs/features.md` に FEAT-100 を追記。初版 `handover.md` 作成。

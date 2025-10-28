@@ -16,6 +16,28 @@ const showMemo = (memoId: string) => {
 const fallback = (value: string, empty: string) => {
   return value?.trim() ? value : empty
 }
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+type HighlightSegment = {
+  text: string
+  active: boolean
+}
+
+const highlightParts = (text: string): HighlightSegment[] => {
+  const query = store.searchQuery.trim()
+  if (!query) {
+    return [{ text, active: false }]
+  }
+  const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi')
+  return text
+    .split(regex)
+    .map((segment, index) => ({
+      text: segment,
+      active: index % 2 === 1,
+    }))
+    .filter((segment) => segment.text.length > 0)
+}
 </script>
 
 <template>
@@ -31,10 +53,26 @@ const fallback = (value: string, empty: string) => {
         >
           <div class="app_panelMemoCatalogHeaderSet flex flex-col gap-1">
             <div class="app_panelMemoCatalogTitle font-semibold">
-              {{ fallback(category.title, 'カテゴリーのタイトルが設定されていません') }}
+              <template
+                v-for="(segment, index) in highlightParts(
+                  fallback(category.title, 'カテゴリーのタイトルが設定されていません'),
+                )"
+                :key="`category-title-${category.id}-${index}`"
+              >
+                <mark v-if="segment.active" class="app_searchHighlight">{{ segment.text }}</mark>
+                <span v-else>{{ segment.text }}</span>
+              </template>
             </div>
             <div class="app_panelMemoCatalogParagraph opacity-50">
-              {{ fallback(category.body, 'カテゴリーの内容が設定されていません') }}
+              <template
+                v-for="(segment, index) in highlightParts(
+                  fallback(category.body, 'カテゴリーの内容が設定されていません'),
+                )"
+                :key="`category-body-${category.id}-${index}`"
+              >
+                <mark v-if="segment.active" class="app_searchHighlight">{{ segment.text }}</mark>
+                <span v-else>{{ segment.text }}</span>
+              </template>
             </div>
           </div>
           <div class="app_iconWrap ml-auto text-xs opacity-0 transition-opacity duration-200 group-hover:opacity-100">
@@ -55,10 +93,26 @@ const fallback = (value: string, empty: string) => {
               </div>
               <div class="app_panelMemoCatalogBodySet inline truncate">
                 <div class="app_panelMemoCatalogBodyTitle mr-1 inline">
-                  {{ fallback(memo.title, 'メモのタイトルが設定されていません') }}
+                  <template
+                    v-for="(segment, index) in highlightParts(
+                      fallback(memo.title, 'メモのタイトルが設定されていません'),
+                    )"
+                    :key="`memo-title-${memo.id}-${index}`"
+                  >
+                    <mark v-if="segment.active" class="app_searchHighlight">{{ segment.text }}</mark>
+                    <span v-else>{{ segment.text }}</span>
+                  </template>
                 </div>
                 <div class="app_panelMemoCatalogBodyParagraph inline opacity-50">
-                  {{ fallback(memo.body, 'メモの内容が設定されていません') }}
+                  <template
+                    v-for="(segment, index) in highlightParts(
+                      fallback(memo.body, 'メモの内容が設定されていません'),
+                    )"
+                    :key="`memo-body-${memo.id}-${index}`"
+                  >
+                    <mark v-if="segment.active" class="app_searchHighlight">{{ segment.text }}</mark>
+                    <span v-else>{{ segment.text }}</span>
+                  </template>
                 </div>
               </div>
               <div class="app_iconWrap ml-auto flex items-center opacity-40 text-sm">

@@ -156,7 +156,12 @@ const confirmDeletion = async () => {
           </div>
           <div class="app_panelCategoryDetailHeaderUpdateText">{{ formatDate(updatedAt) }}</div>
         </div>
-        <button class="app_memoDelete app_iconWrap ml-auto flex items-center cursor-pointer opacity-50" type="button" @click="showDeleteModal = true">
+        <button
+          v-if="!isNew"
+          class="app_memoDelete app_iconWrap ml-auto flex items-center cursor-pointer opacity-50"
+          type="button"
+          @click="showDeleteModal = true"
+        >
           <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
         </button>
       </div>
