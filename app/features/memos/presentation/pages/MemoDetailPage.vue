@@ -251,7 +251,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
 </script>
 
 <template>
-  <div class="app_display flex flex-col gap-2 max-w-4xl mx-auto p-2 min-h-0 text-sm">
+  <div class="app_display flex flex-col gap-2 p-2 min-h-0 text-sm">
     <AppPanelSearch />
 
     <div class="app_panelMemoDetail overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-sm p-2 space-y-3">
