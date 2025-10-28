@@ -2,12 +2,14 @@
 import { computed } from 'vue'
 import { useRouter } from '#imports'
 import { useMemoAppStore } from '@/features/app'
+import { buildHighlightSegments, type HighlightSegment } from '@/shared/utils/highlight'
 
 const store = useMemoAppStore()
 const router = useRouter()
 
 const catalog = computed(() => store.filteredCategories)
 const hasData = computed(() => catalog.value.length > 0)
+const query = computed(() => store.searchQuery)
 
 const showMemo = (memoId: string) => {
   router.push(`/memos/${memoId}`)
@@ -17,26 +19,8 @@ const fallback = (value: string, empty: string) => {
   return value?.trim() ? value : empty
 }
 
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-type HighlightSegment = {
-  text: string
-  active: boolean
-}
-
 const highlightParts = (text: string): HighlightSegment[] => {
-  const query = store.searchQuery.trim()
-  if (!query) {
-    return [{ text, active: false }]
-  }
-  const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi')
-  return text
-    .split(regex)
-    .map((segment, index) => ({
-      text: segment,
-      active: index % 2 === 1,
-    }))
-    .filter((segment) => segment.text.length > 0)
+  return buildHighlightSegments(text, query.value)
 }
 </script>
 

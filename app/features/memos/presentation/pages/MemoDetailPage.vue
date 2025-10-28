@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch, onMounted } from 'vue'
+import { computed, reactive, ref, watch, onMounted, nextTick } from 'vue'
 import { useRouter, useRoute } from '#imports'
 import { AppPanelSearch, useMemoAppStore } from '@/features/app'
 import { AppPanelModal, AppPanelPopover } from '@/shared/presentation'
 import type { MemoEntry } from '@/shared/types/memo'
+import { buildHighlightSegments, type HighlightSegment } from '@/shared/utils/highlight'
 
 const store = useMemoAppStore()
 const router = useRouter()
@@ -12,6 +13,7 @@ const route = useRoute()
 const memoId = computed(() => route.params.id as string)
 const isNew = computed(() => memoId.value === 'new')
 const queryCategory = computed(() => (route.query.category as string) ?? null)
+const searchQuery = computed(() => store.searchQuery)
 
 const iconCandidates = [
   'material-symbols:note-alt-rounded',
@@ -42,6 +44,11 @@ const showDeleteModal = ref(false)
 const pending = ref(false)
 const errorMessage = ref<string | null>(null)
 
+const titleInputRef = ref<HTMLInputElement | null>(null)
+const bodyTextareaRef = ref<HTMLTextAreaElement | null>(null)
+const isTitleEditing = ref(isNew.value)
+const isBodyEditing = ref(isNew.value)
+
 const filteredIcons = computed(() => {
   const query = iconSearch.value.trim().toLowerCase()
   if (!query) {
@@ -58,6 +65,60 @@ const currentMemo = computed<MemoEntry | null>(() => {
 })
 
 const selectedCategory = computed(() => store.findCategory(memoForm.categoryId ?? queryCategory.value ?? null))
+
+const displayTitleText = computed(() =>
+  memoForm.title?.trim() ? memoForm.title : 'メモのタイトルが設定されていません',
+)
+const displayBodyText = computed(() =>
+  memoForm.body?.trim() ? memoForm.body : 'メモの内容が設定されていません',
+)
+
+watch(() => isNew.value, (value) => {
+  isTitleEditing.value = value
+  isBodyEditing.value = value
+})
+
+const startTitleEditing = async () => {
+  if (isTitleEditing.value) {
+    return
+  }
+  isTitleEditing.value = true
+  await nextTick()
+  titleInputRef.value?.focus()
+  titleInputRef.value?.select()
+}
+
+const finishTitleEditing = () => {
+  isTitleEditing.value = false
+}
+
+const handleTitleInputKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    finishTitleEditing()
+  }
+}
+
+const startBodyEditing = async () => {
+  if (isBodyEditing.value) {
+    return
+  }
+  isBodyEditing.value = true
+  await nextTick()
+  bodyTextareaRef.value?.focus()
+  bodyTextareaRef.value?.select()
+}
+
+const finishBodyEditing = () => {
+  isBodyEditing.value = false
+}
+
+const handleBodyInputKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    finishBodyEditing()
+  }
+}
 
 const populateFromMemo = (memo: MemoEntry | null) => {
   if (memo) {
@@ -86,6 +147,12 @@ watch(
 onMounted(() => {
   if (isNew.value && !memoForm.categoryId && store.categories.length) {
     memoForm.categoryId = queryCategory.value ?? store.categories[0]?.id ?? ''
+  }
+  if (isTitleEditing.value) {
+    nextTick(() => {
+      titleInputRef.value?.focus()
+      titleInputRef.value?.select()
+    })
   }
 })
 
@@ -176,6 +243,11 @@ const formatDate = (value: string | null) => {
   )
   return `${date}(${weekday})`
 }
+
+const highlightSegments = (text: string): HighlightSegment[] => {
+  const base = text ?? ''
+  return buildHighlightSegments(base, searchQuery.value)
+}
 </script>
 
 <template>
@@ -203,7 +275,15 @@ const formatDate = (value: string | null) => {
               <Icon :name="selectedCategory?.icon || 'material-symbols:folder-open-rounded'" aria-hidden="true" />
             </div>
             <div class="app_panelMemoDetailHeaderCategoryText">
-              {{ selectedCategory?.title || 'カテゴリー' }}
+              <template
+                v-if="selectedCategory"
+                v-for="(segment, index) in highlightSegments(selectedCategory.title || 'カテゴリー')"
+                :key="`memo-detail-category-${index}`"
+              >
+                <mark v-if="segment.active" class="app_searchHighlight">{{ segment.text }}</mark>
+                <span v-else>{{ segment.text }}</span>
+              </template>
+              <template v-else>カテゴリー</template>
             </div>
           </button>
 
@@ -226,7 +306,15 @@ const formatDate = (value: string | null) => {
                 <div class="app_iconWrap">
                   <Icon :name="category.icon" size="20" aria-hidden="true" />
                 </div>
-                <div class="app_panelPopoverItemText">{{ category.title || '名称未設定' }}</div>
+                <div class="app_panelPopoverItemText">
+                  <template
+                    v-for="(segment, index) in highlightSegments(category.title || '名称未設定')"
+                    :key="`memo-popover-category-${category.id}-${index}`"
+                  >
+                    <mark v-if="segment.active" class="app_searchHighlight">{{ segment.text }}</mark>
+                    <span v-else>{{ segment.text }}</span>
+                  </template>
+                </div>
               </div>
             </div>
           </AppPanelPopover>
@@ -296,16 +384,54 @@ const formatDate = (value: string | null) => {
           </AppPanelPopover>
         </div>
         <div class="app_panelMemoDetailSet w-full space-y-2">
+          <div
+            v-if="!isTitleEditing"
+            class="app_panelMemoDetailTitleDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+            role="button"
+            tabindex="0"
+            aria-label="メモのタイトルを編集"
+            @click="startTitleEditing"
+            @keydown.enter.prevent="startTitleEditing"
+            @keydown.space.prevent="startTitleEditing"
+          >
+            <template v-for="(segment, index) in highlightSegments(displayTitleText)" :key="`memo-display-title-${index}`">
+              <mark v-if="segment.active" class="app_searchHighlight">{{ segment.text }}</mark>
+              <span v-else>{{ segment.text }}</span>
+            </template>
+          </div>
           <input
+            v-else
+            ref="titleInputRef"
             v-model="memoForm.title"
             class="app_panelMemoDetailTitle w-full border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-slate-200"
             placeholder="メモのタイトル"
+            @blur="finishTitleEditing"
+            @keydown="handleTitleInputKeydown"
           />
+          <div
+            v-if="!isBodyEditing"
+            class="app_panelMemoDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+            role="button"
+            tabindex="0"
+            aria-label="メモの内容を編集"
+            @click="startBodyEditing"
+            @keydown.enter.prevent="startBodyEditing"
+            @keydown.space.prevent="startBodyEditing"
+          >
+            <template v-for="(segment, index) in highlightSegments(displayBodyText)" :key="`memo-display-body-${index}`">
+              <mark v-if="segment.active" class="app_searchHighlight">{{ segment.text }}</mark>
+              <span v-else>{{ segment.text }}</span>
+            </template>
+          </div>
           <textarea
+            v-else
+            ref="bodyTextareaRef"
             v-model="memoForm.body"
             rows="6"
             class="app_panelMemoDetailParagraph w-full border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-slate-200"
             placeholder="メモの内容"
+            @blur="finishBodyEditing"
+            @keydown="handleBodyInputKeydown"
           />
         </div>
       </div>

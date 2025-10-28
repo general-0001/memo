@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch, nextTick, onMounted } from 'vue'
 import { useRouter, useRoute } from '#imports'
 import { AppPanelSearch, useMemoAppStore } from '@/features/app'
 import { AppPanelModal, AppPanelPopover } from '@/shared/presentation'
 import type { MemoCategory } from '@/shared/types/memo'
+import { buildHighlightSegments, type HighlightSegment } from '@/shared/utils/highlight'
 
 const store = useMemoAppStore()
 const router = useRouter()
@@ -11,6 +12,7 @@ const route = useRoute()
 
 const categoryId = computed(() => route.params.id as string)
 const isNew = computed(() => categoryId.value === 'new')
+const searchQuery = computed(() => store.searchQuery)
 
 const iconCandidates = [
   'material-symbols:folder-open-rounded',
@@ -37,6 +39,10 @@ const iconButtonRef = ref<HTMLElement | null>(null)
 const iconSearch = ref('')
 const showDeleteModal = ref(false)
 
+const titleInputRef = ref<HTMLInputElement | null>(null)
+const bodyTextareaRef = ref<HTMLTextAreaElement | null>(null)
+const isTitleEditing = ref(isNew.value)
+const isBodyEditing = ref(isNew.value)
 const filteredIcons = computed(() => {
   const query = iconSearch.value.trim().toLowerCase()
   if (!query) {
@@ -50,6 +56,69 @@ const currentCategory = computed<MemoCategory | null>(() => {
     return null
   }
   return store.findCategory(categoryId.value) ?? null
+})
+
+const displayTitleText = computed(() =>
+  categoryForm.title?.trim() ? categoryForm.title : 'カテゴリーのタイトルが設定されていません',
+)
+const displayBodyText = computed(() =>
+  categoryForm.body?.trim() ? categoryForm.body : 'カテゴリーの内容が設定されていません',
+)
+
+watch(() => isNew.value, (value) => {
+  isTitleEditing.value = value
+  isBodyEditing.value = value
+})
+
+const startTitleEditing = async () => {
+  if (isTitleEditing.value) {
+    return
+  }
+  isTitleEditing.value = true
+  await nextTick()
+  titleInputRef.value?.focus()
+  titleInputRef.value?.select()
+}
+
+const finishTitleEditing = () => {
+  isTitleEditing.value = false
+}
+
+const handleTitleInputKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    finishTitleEditing()
+  }
+}
+
+const startBodyEditing = async () => {
+  if (isBodyEditing.value) {
+    return
+  }
+  isBodyEditing.value = true
+  await nextTick()
+  bodyTextareaRef.value?.focus()
+  bodyTextareaRef.value?.select()
+}
+
+const finishBodyEditing = () => {
+  isBodyEditing.value = false
+}
+
+const handleBodyInputKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    finishBodyEditing()
+  }
+}
+
+onMounted(() => {
+  if (isTitleEditing.value) {
+    nextTick(() => {
+      titleInputRef.value?.focus()
+      titleInputRef.value?.select()
+    })
+  }
 })
 
 const populate = (category: MemoCategory | null) => {
@@ -127,6 +196,11 @@ const confirmDeletion = async () => {
     pending.value = false
     showDeleteModal.value = false
   }
+}
+
+const highlightSegments = (text: string): HighlightSegment[] => {
+  const base = text ?? ''
+  return buildHighlightSegments(base, searchQuery.value)
 }
 </script>
 
@@ -208,16 +282,60 @@ const confirmDeletion = async () => {
           </AppPanelPopover>
         </div>
         <div class="app_panelCategoryDetailSet w-full space-y-2">
+          <div
+            v-if="!isTitleEditing"
+            class="app_panelCategoryDetailTitleDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+            role="button"
+            tabindex="0"
+            aria-label="カテゴリーのタイトルを編集"
+            @click="startTitleEditing"
+            @keydown.enter.prevent="startTitleEditing"
+            @keydown.space.prevent="startTitleEditing"
+          >
+            <template
+              v-for="(segment, index) in highlightSegments(displayTitleText)"
+              :key="`category-display-title-${index}`"
+            >
+              <mark v-if="segment.active" class="app_searchHighlight">{{ segment.text }}</mark>
+              <span v-else>{{ segment.text }}</span>
+            </template>
+          </div>
           <input
+            v-else
+            ref="titleInputRef"
             v-model="categoryForm.title"
             class="app_panelCategoryDetailTitle w-full border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-slate-200"
             placeholder="カテゴリーのタイトル"
+            @blur="finishTitleEditing"
+            @keydown="handleTitleInputKeydown"
           />
+          <div
+            v-if="!isBodyEditing"
+            class="app_panelCategoryDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+            role="button"
+            tabindex="0"
+            aria-label="カテゴリーの内容を編集"
+            @click="startBodyEditing"
+            @keydown.enter.prevent="startBodyEditing"
+            @keydown.space.prevent="startBodyEditing"
+          >
+            <template
+              v-for="(segment, index) in highlightSegments(displayBodyText)"
+              :key="`category-display-body-${index}`"
+            >
+              <mark v-if="segment.active" class="app_searchHighlight">{{ segment.text }}</mark>
+              <span v-else>{{ segment.text }}</span>
+            </template>
+          </div>
           <textarea
+            v-else
+            ref="bodyTextareaRef"
             v-model="categoryForm.body"
             rows="6"
             class="app_panelCategoryDetailParagraph w-full border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-slate-200"
             placeholder="カテゴリーの内容"
+            @blur="finishBodyEditing"
+            @keydown="handleBodyInputKeydown"
           />
         </div>
       </div>

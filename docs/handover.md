@@ -38,6 +38,7 @@
 - **インフラ層**: Dexie 接続は `app/features/app/infrastructure/memoDexie.client.ts`。カテゴリ/メモ用アダプタは `app/features/{categories|memos}/infrastructure/dexie.*.repository.ts` としてポートへ登録。BroadcastChannel は `app/features/app/infrastructure/memoBroadcast.channel.ts`。
 - **プレゼンテーション層**: `AppPanel*` コンポーネントは Feature ごとの `presentation/components` に移動し、共有モーダル/ポップオーバーは `app/shared/presentation` で公開。
 - **スタイル基盤**: `assets/css/main.css` は `app_iconWrap` とトランジションプリセットのみを保持し、背景/枠線/余白は各コンポーネントで Tailwind ユーティリティを直接指定（ネスト時の副作用を防止）。
+- **共通ユーティリティ**: `app/shared/utils/highlight.ts` が検索語をハイライトセグメントへ分割し、一覧・詳細双方の表示モードで再利用。
 - **依存ルール**: Presentation → Application → Domain、Infrastructure → Application/Domain。Feature間は index 公開面経由で解決し、直接内部には依存しない。
 
 ## 5. インターフェース契約（UI）
@@ -45,7 +46,8 @@
 - **ページ構造**: 各 Nuxt ページは Feature プレゼンテーション (`MemoWorkspacePage`, `MemoDetailPage`, `CategoryDetailPage`) を描画。
 - **UI要素**: `app_panelSearch`, `app_panelAddCategory`, `app_panelMemoCatalog`, `app_panelMemoDetail`, `app_panelCategoryDetail`, `app_panelModal`, `app_panelPopover`, `app_panelError`。
 - **スタイル適用**: 各パネル/ボタンは `bg-white border border-slate-200 rounded-xl shadow-sm` などをコンポーネント側で付与し、`template.html` との対応を維持しつつ局所的に調整可能な構成。
-- **検索ハイライト**: カタログ上の一致箇所を `<mark class="app_searchHighlight">` で包み、視覚的に検索キーワードを強調。
+- **検索ハイライト**: 一覧とメモ/カテゴリー詳細の表示モードで一致箇所を `<mark class="app_searchHighlight">` で包み、視覚的に検索キーワードを強調。
+- **表示⇔編集切替**: メモ/カテゴリー詳細のタイトル・本文は表示ブロックをクリック/Enter/Spaceで編集モードに遷移し、フォーカスアウトまたは Esc で表示モードへ戻る。表示モードでは検索ハイライトと定型メッセージを提示。
 - **操作**: Nuxt ルーターと @nuxt/icon を利用。モーダル/ポップオーバーは focus trap + ARIA 属性を保持し、ポップオーバーは Teleport で `body` 直下に描画・トリガー座標からオフセット計算（上下自動反転）する。
 - **削除操作**: カテゴリー/メモの新規作成画面では削除ボタンを表示せず、既存エンティティのみ削除ダイアログを呼び出せる。
 
@@ -61,6 +63,7 @@
 3. メモ追加/編集 → `/memos/new?category=:id` または `/memos/:id`、モーダルで削除確定。
 4. アイコン・カテゴリー選択は `AppPanelPopover` でフォーカストラップ。
 5. BroadcastChannel で CRUD を他タブに通知し、イベント受信時は `refreshFromDb()` でDexieリロード。
+6. メモ/カテゴリー詳細のタイトル・本文は表示ブロックから編集モードへ切り替え、編集完了後はフォーカスアウトで表示へ戻す（表示時に検索ハイライトを適用）。
 
 ## 8. セキュリティ / プライバシー
 - 認証なし・ローカル利用前提。将来的なPII対応時は暗号化/アクセス制御/監査証跡の追加が必要。
@@ -96,8 +99,9 @@ pnpm typecheck        # vue-tsc strict
 - **未実施**: 自動Vitest/Playwright suites、性能/耐久テスト。
 - **優先テスト**:
   1. Dexie リポジトリアダプタ + ポートのユニットテスト。
-  2. Playwright 自動E2E（メモ/カテゴリー CRUD → 検索 → 削除 → 同期確認）。
-  3. BroadcastChannel 非対応ブラウザでのフォールバック検証。
+  2. メモ/カテゴリー詳細の表示⇔編集切替と検索ハイライトを Playwright で自動確認。
+  3. Playwright 自動E2E（メモ/カテゴリー CRUD → 検索 → 削除 → 同期確認）。
+  4. BroadcastChannel 非対応ブラウザでのフォールバック検証。
 
 ## 15. リスク / 失敗モード
 - IndexedDB 非対応環境（プライベートモード等）→ UI 停止。現在はエラーバナー表示のみ。
@@ -108,13 +112,15 @@ pnpm typecheck        # vue-tsc strict
 
 ## 16. 次アクション（優先度順）
 1. **High**: Dexie リポジトリ/ポートに対する自動テストと依存検証の追加。CI で `pnpm typecheck && pnpm test` を整備。
-2. **High**: BroadcastChannel 非対応ブラウザ向けフォールバック（ポーリングや StorageEvent 等）とユーザー通知UIの実装。
-3. **Medium**: コンポーネント単位の Tailwind ユーティリティ適用方針をガイドライン化し、`template.html` やドキュメントとの整合を確認（main.css 最小化後のスタイル定義を周知）。
-4. **Medium**: エクスポート/インポート仕様・UI設計、IndexedDB スキーマ version 2 の計画。
-5. **Medium**: バリデーション（文字数/必須/タグ制限）とユーザーフィードバック（Toast）。
-6. **Low**: 観測性（操作ログ/メトリクス）の整備と i18n 下準備。
+2. **High**: メモ/カテゴリー詳細の表示⇔編集切替・検索ハイライトを含む Playwright 自動E2Eの整備。
+3. **High**: BroadcastChannel 非対応ブラウザ向けフォールバック（ポーリングや StorageEvent 等）とユーザー通知UIの実装。
+4. **Medium**: コンポーネント単位の Tailwind ユーティリティ適用方針をガイドライン化し、`template.html` やドキュメントとの整合を確認（main.css 最小化後のスタイル定義を周知）。
+5. **Medium**: エクスポート/インポート仕様・UI設計、IndexedDB スキーマ version 2 の計画。
+6. **Medium**: バリデーション（文字数/必須/タグ制限）とユーザーフィードバック（Toast）。
+7. **Low**: 観測性（操作ログ/メトリクス）の整備と i18n 下準備。
 
 ## 17. 変更履歴（短縮）
+- 2025-10-29: 検索ハイライトを詳細画面の表示モードへ拡張し、共通ユーティリティ `highlight.ts` を導入。メモ/カテゴリー詳細のタイトル・本文を表示⇔編集モードに分離し、Esc/フォーカスアウトで復帰するUXへ更新。関連ドキュメント（本書・`docs/features.md`）を反映。
 - 2025-10-28: モーダルオーバーレイの視覚不具合を修正し、`main.css` を最小化。各 `AppPanel*` コンポーネントへ Tailwind ユーティリティを移し替え、検索ヒット箇所に `<mark>` 強調を導入。新規作成時の削除ボタンを非表示化し、Playwright MCP でページ表示・モーダル挙動・検索ハイライトを再確認。
 - 2025-10-27: Feature内レイヤ構造へ再編。Dexieリポジトリ/Syncサービス導入、モーダル等プレゼンテーションを Feature 配下へ移動、`docs/plan-refactoring.md` を作成。
 - 2025-10-26: メモアプリUI/IndexedDB/BroadcastChannel実装、AppPanelModal/Popoverのアクセシビリティ刷新、Playwrightで動作検証。
