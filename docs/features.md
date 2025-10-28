@@ -211,7 +211,7 @@
 - 名称: メモワークスペース
 - ステータス: In Dev（ローカルUI/IndexedDB実装完了、残課題あり）
 - オーナー/ステークホルダー（RACI）: R=AI開発担当 / A=ユーザー（プロダクトオーナー） / C=将来のQA・デザイナ / I=運用
-- 最終更新日: 2025-10-26
+- 最終更新日: 2025-10-28
 - 関連ドキュメント: `docs/plan.md`, `docs/architecture/structure-hybrid.md`, `template.html`
 
 ### 4.2 目的・価値・成果指標
@@ -230,6 +230,7 @@
   - `/memos/[id]`: メモ詳細/編集 (`[id]=new` で作成)。
   - `/categories/[id]`: カテゴリー詳細/編集 (`[id]=new` で作成)。
 - 画面構造は `template.html` の `app_*` クラスを忠実に再現。モーダル/ポップオーバーは `AppPanelModal/AppPanelPopover` を介してARIA属性とフォーカストラップを付与。ポップオーバーは Teleport で `body` 直下に描画され、トリガー要素の座標からオフセット計算して上下を自動反転する。
+- スタイルは各 `AppPanel*` コンポーネントで Tailwind ユーティリティ（`bg-white border border-slate-200 rounded-xl shadow-sm` 等）を直接指定し、`assets/css/main.css` は `app_iconWrap` とトランジションプリセットのみを保持する。
 - API/イベントは無し（クライアント内完結）。
 
 ### 4.5 データ契約 / 永続化
@@ -256,7 +257,7 @@
 
 ### 4.9 テスト / 受け入れ
 - 型検査: `pnpm typecheck`（vue-tsc strict mode）。
-- 手動E2E（Playwright MCP）: カテゴリー/メモ追加・検索・モーダル/ポップオーバー操作（アンカー位置・フォールバック含む）・削除、アイコン切替を確認。
+- 手動E2E（Playwright MCP）: 2025-10-28 カテゴリー/メモ追加・検索・モーダル/ポップオーバーのフェード/オーバーレイ挙動・削除、アイコン切替を確認。
 - 今後: Vitest + Happy DOM でユースケース単体テスト、Playwright自動E2Eを整備予定。
 
 ### 4.10 未決事項 / 次アクション

@@ -9,7 +9,13 @@ const handleClick = () => {
 </script>
 
 <template>
-  <div class="app_panelAddCategory p-2 border-b border-slate-200 flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-slate-200" role="button" tabindex="0" @click="handleClick" @keydown.enter.prevent="handleClick">
+  <div
+    class="app_panelAddCategory p-2 bg-white border border-slate-200 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition duration-200 hover:bg-slate-100"
+    role="button"
+    tabindex="0"
+    @click="handleClick"
+    @keydown.enter.prevent="handleClick"
+  >
     <div class="app_iconWrap flex items-center bg-black rounded text-white">
       <Icon name="material-symbols:add-rounded" aria-hidden="true" />
     </div>

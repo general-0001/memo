@@ -37,12 +37,14 @@
 - **アプリケーション層**: Category/Memo サービスは `application/services` 内でポートを取得し、Pinia ストアは `app/features/app/application/stores/memoApp.store.ts` に集約。初期シード・同期は `application/services/memoSeed.service.ts` / `memoSync.service.ts` に分離。
 - **インフラ層**: Dexie 接続は `app/features/app/infrastructure/memoDexie.client.ts`。カテゴリ/メモ用アダプタは `app/features/{categories|memos}/infrastructure/dexie.*.repository.ts` としてポートへ登録。BroadcastChannel は `app/features/app/infrastructure/memoBroadcast.channel.ts`。
 - **プレゼンテーション層**: `AppPanel*` コンポーネントは Feature ごとの `presentation/components` に移動し、共有モーダル/ポップオーバーは `app/shared/presentation` で公開。
+- **スタイル基盤**: `assets/css/main.css` は `app_iconWrap` とトランジションプリセットのみを保持し、背景/枠線/余白は各コンポーネントで Tailwind ユーティリティを直接指定（ネスト時の副作用を防止）。
 - **依存ルール**: Presentation → Application → Domain、Infrastructure → Application/Domain。Feature間は index 公開面経由で解決し、直接内部には依存しない。
 
 ## 5. インターフェース契約（UI）
 - **ルート**: `/`（一覧）、`/memos/[id|new]`, `/categories/[id|new]`。
 - **ページ構造**: 各 Nuxt ページは Feature プレゼンテーション (`MemoWorkspacePage`, `MemoDetailPage`, `CategoryDetailPage`) を描画。
 - **UI要素**: `app_panelSearch`, `app_panelAddCategory`, `app_panelMemoCatalog`, `app_panelMemoDetail`, `app_panelCategoryDetail`, `app_panelModal`, `app_panelPopover`, `app_panelError`。
+- **スタイル適用**: 各パネル/ボタンは `bg-white border border-slate-200 rounded-xl shadow-sm` などをコンポーネント側で付与し、`template.html` との対応を維持しつつ局所的に調整可能な構成。
 - **操作**: Nuxt ルーターと @nuxt/icon を利用。モーダル/ポップオーバーは focus trap + ARIA 属性を保持し、ポップオーバーは Teleport で `body` 直下に描画・トリガー座標からオフセット計算（上下自動反転）する。
 
 ## 6. データ/永続化
@@ -88,7 +90,7 @@ pnpm typecheck        # vue-tsc strict
 - 開発時は `pnpm typecheck` を随時実行し、BroadcastChannel の動作確認は複数タブで手動実施。
 
 ## 14. テスト戦略 / 実施状況
-- **実施済み**: `pnpm typecheck`, 手動Playwright（CRUD/検索/モーダル操作/同期）。
+- **実施済み**: 2025-10-28 `pnpm typecheck`、Playwright MCP（カテゴリー/メモ CRUD・検索・モーダルのフェード/オーバーレイを再検証）。
 - **未実施**: 自動Vitest/Playwright suites、性能/耐久テスト。
 - **優先テスト**:
   1. Dexie リポジトリアダプタ + ポートのユニットテスト。
@@ -105,11 +107,13 @@ pnpm typecheck        # vue-tsc strict
 ## 16. 次アクション（優先度順）
 1. **High**: Dexie リポジトリ/ポートに対する自動テストと依存検証の追加。CI で `pnpm typecheck && pnpm test` を整備。
 2. **High**: BroadcastChannel 非対応ブラウザ向けフォールバック（ポーリングや StorageEvent 等）とユーザー通知UIの実装。
-3. **Medium**: エクスポート/インポート仕様・UI設計、IndexedDB スキーマ version 2 の計画。
-4. **Medium**: バリデーション（文字数/必須/タグ制限）とユーザーフィードバック（Toast）。
-5. **Low**: 観測性（操作ログ/メトリクス）の整備と i18n 下準備。
+3. **Medium**: コンポーネント単位の Tailwind ユーティリティ適用方針をガイドライン化し、`template.html` やドキュメントとの整合を確認（main.css 最小化後のスタイル定義を周知）。
+4. **Medium**: エクスポート/インポート仕様・UI設計、IndexedDB スキーマ version 2 の計画。
+5. **Medium**: バリデーション（文字数/必須/タグ制限）とユーザーフィードバック（Toast）。
+6. **Low**: 観測性（操作ログ/メトリクス）の整備と i18n 下準備。
 
 ## 17. 変更履歴（短縮）
+- 2025-10-28: モーダルオーバーレイの視覚不具合を修正し、`main.css` を最小化。各 `AppPanel*` コンポーネントへ Tailwind ユーティリティを移し替え、Playwright MCP でページ表示とモーダル挙動を再確認。
 - 2025-10-27: Feature内レイヤ構造へ再編。Dexieリポジトリ/Syncサービス導入、モーダル等プレゼンテーションを Feature 配下へ移動、`docs/plan-refactoring.md` を作成。
 - 2025-10-26: メモアプリUI/IndexedDB/BroadcastChannel実装、AppPanelModal/Popoverのアクセシビリティ刷新、Playwrightで動作検証。
 - 2025-10-26: `docs/features.md` に FEAT-100 を追記。初版 `handover.md` 作成。

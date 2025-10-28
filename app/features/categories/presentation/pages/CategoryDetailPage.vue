@@ -131,10 +131,10 @@ const confirmDeletion = async () => {
 </script>
 
 <template>
-  <div class="app_display flex flex-col min-h-0 text-sm">
+  <div class="app_display flex flex-col gap-2 max-w-4xl mx-auto p-2 min-h-0 text-sm">
     <AppPanelSearch />
 
-    <div class="app_panelCategoryDetail overflow-y-auto">
+    <div class="app_panelCategoryDetail overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-sm p-2 space-y-3">
       <div class="app_panelCategoryDetailHeader flex gap-4 p-2 border-b border-slate-200 opacity-50">
         <div class="app_panelCategoryDetailHeaderTitle flex items-center gap-2">
           <div class="app_iconWrap flex items-center">

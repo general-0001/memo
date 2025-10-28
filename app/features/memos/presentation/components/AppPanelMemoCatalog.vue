@@ -19,7 +19,7 @@ const fallback = (value: string, empty: string) => {
 </script>
 
 <template>
-  <div class="app_panelMemoCatalog overflow-y-auto">
+  <div class="app_panelMemoCatalog overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-sm p-2 space-y-2">
     <template v-if="hasData">
       <div v-for="{ category, memos } in catalog" :key="category.id">
         <div
