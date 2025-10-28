@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import type { AppSettings, MemoCategory, MemoEntry } from '../types/memo'
+import type { AppSettings, MemoCategory, MemoEntry } from '@/shared/types/memo'
 
 class MemoDexie extends Dexie {
   categories!: Table<MemoCategory, string>

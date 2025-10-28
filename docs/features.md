@@ -237,7 +237,7 @@
   - `categories`: `{ id, title, body, icon, tags[], createdAt, updatedAt }`
   - `memos`: `{ id, categoryId, title, body, icon, tags[], createdAt, updatedAt }`
   - `settings`: `{ id:'app', sampleSeeded, lastSync }`
-- Dexieを利用し、CRUDユースケースは `app/features/*/application` 層に配置。タグは `shared/utils/tags.ts` で `#word` を正規表現抽出。
+- Dexieを利用し、CRUDユースケースは `app/features/*/application` 層に配置。Dexieアダプタは `app/features/{categories|memos}/infrastructure` で `registerDexie*Repository` として公開し、`app/plugins/memo.client.ts` で起動時にポートへ注入する。タグは `shared/utils/tags.ts` で `#word` を正規表現抽出。
 
 ### 4.6 ビジネスルール / ポリシー
 - 登録順表示（`createdAt` 昇順）。
@@ -248,7 +248,7 @@
 
 ### 4.7 エラー / 回復性
 - IndexedDBエラーは `memoApp.store.ts` で捕捉し、`app_panelError` に表示。
-- BroadcastChannelで他タブ更新通知。受信できない場合は `refreshFromDb()` をフォールバック。
+- BroadcastChannelで他タブ更新通知。Syncチャネルの生成は `app/features/app/application/services/memoSync.service.ts` を経由し、受信できない場合は `refreshFromDb()` をフォールバック。
 - 操作中にDB削除が発生した場合（例: テストリセット）も再シードされる。
 
 ### 4.8 セキュリティ / プライバシー

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from '#imports'
-import { useMemoAppStore } from '@/features/app/application/memoApp.store'
+import { useMemoAppStore } from '@/features/app'
 
 const store = useMemoAppStore()
 const router = useRouter()

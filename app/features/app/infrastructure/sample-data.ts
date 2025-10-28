@@ -1,7 +1,6 @@
-import type { MemoCategory, MemoEntry } from '../types/memo'
-import type { AppSettings } from '../types/memo'
-import { extractTags } from '../utils/tags'
-import { useMemoDexie } from './db'
+import type { MemoCategory, MemoEntry, AppSettings } from '@/shared/types/memo'
+import { extractTags } from '@/shared/utils/tags'
+import { useMemoDexie } from './memoDexie.client'
 
 const iso = (date: Date) => date.toISOString()
 

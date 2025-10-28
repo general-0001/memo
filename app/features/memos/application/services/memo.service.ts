@@ -1,6 +1,6 @@
 import type { MemoEntry } from '@/shared/types/memo'
 import { extractTags } from '@/shared/utils/tags'
-import { useMemoDexie } from '@/shared/infrastructure/db'
+import { getMemoRepository } from '../ports/memo.repository'
 
 const buildMemo = (payload: Partial<MemoEntry> & { categoryId: string }): MemoEntry => {
   const now = new Date().toISOString()
@@ -17,25 +17,24 @@ const buildMemo = (payload: Partial<MemoEntry> & { categoryId: string }): MemoEn
 }
 
 export const fetchAllMemos = async (): Promise<MemoEntry[]> => {
-  const db = useMemoDexie()
-  return db.memos.orderBy('createdAt').toArray()
+  const repository = getMemoRepository()
+  return repository.fetchAll()
 }
 
 export const fetchMemosByCategory = async (categoryId: string): Promise<MemoEntry[]> => {
-  const db = useMemoDexie()
-  return db.memos.where('categoryId').equals(categoryId).sortBy('createdAt')
+  const repository = getMemoRepository()
+  return repository.fetchByCategory(categoryId)
 }
 
 export const createMemo = async (payload: Partial<MemoEntry> & { categoryId: string }): Promise<MemoEntry> => {
-  const db = useMemoDexie()
+  const repository = getMemoRepository()
   const memo = buildMemo(payload)
-  await db.memos.put(memo)
-  return memo
+  return repository.create(memo)
 }
 
 export const updateMemo = async (id: string, payload: Partial<MemoEntry>): Promise<MemoEntry | null> => {
-  const db = useMemoDexie()
-  const current = await db.memos.get(id)
+  const repository = getMemoRepository()
+  const current = await repository.findById(id)
   if (!current) {
     return null
   }
@@ -46,11 +45,10 @@ export const updateMemo = async (id: string, payload: Partial<MemoEntry>): Promi
     tags: extractTags(`${payload.title ?? current.title} ${payload.body ?? current.body}`),
     updatedAt: new Date().toISOString(),
   }
-  await db.memos.put(next)
-  return next
+  return repository.update(next)
 }
 
 export const deleteMemo = async (id: string): Promise<void> => {
-  const db = useMemoDexie()
-  await db.memos.delete(id)
+  const repository = getMemoRepository()
+  await repository.delete(id)
 }

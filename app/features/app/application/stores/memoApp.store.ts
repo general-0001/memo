@@ -1,10 +1,14 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { MemoCategory, MemoEntry, PanelView } from '@/shared/types/memo'
-import { seedSampleDataIfNeeded } from '@/shared/infrastructure/sample-data'
-import { fetchAllCategories, createCategory, updateCategory, deleteCategory } from '@/features/categories/application/categoryService'
-import { fetchAllMemos, createMemo, updateMemo, deleteMemo } from '@/features/memos/application/memoService'
-import { createMemoBroadcastChannel, type MemoBroadcastEvent } from '@/shared/infrastructure/broadcast'
+import { seedMemoWorkspaceData } from '@/features/app/application/services/memoSeed.service'
+import { fetchAllCategories, createCategory, updateCategory, deleteCategory } from '@/features/categories'
+import { fetchAllMemos, createMemo, updateMemo, deleteMemo } from '@/features/memos'
+import {
+  createMemoSyncChannel,
+  type MemoBroadcastEvent,
+  type MemoSyncChannel,
+} from '@/features/app/application/services/memoSync.service'
 
 const normalize = (value: string) => value.toLowerCase()
 
@@ -17,7 +21,8 @@ export const useMemoAppStore = defineStore('memoApp', () => {
   const errorMessage = ref<string | null>(null)
 
   let unsubscribe: (() => void) | null = null
-  let channelInstance = typeof window !== 'undefined' ? createMemoBroadcastChannel() : null
+  let channelInstance: MemoSyncChannel | null =
+    typeof window !== 'undefined' ? createMemoSyncChannel() : null
 
   const memoMap = computed(() => {
     const map = new Map<string, MemoEntry[]>()
@@ -90,7 +95,7 @@ export const useMemoAppStore = defineStore('memoApp', () => {
     }
     loading.value = true
     try {
-      await seedSampleDataIfNeeded()
+      await seedMemoWorkspaceData()
       await refreshFromDb()
       setupChannel()
     } catch (error) {
@@ -105,7 +110,7 @@ export const useMemoAppStore = defineStore('memoApp', () => {
       return
     }
     if (!channelInstance) {
-      channelInstance = createMemoBroadcastChannel()
+      channelInstance = createMemoSyncChannel()
     }
     if (!channelInstance) {
       return
@@ -121,7 +126,7 @@ export const useMemoAppStore = defineStore('memoApp', () => {
       return
     }
     if (!channelInstance) {
-      channelInstance = createMemoBroadcastChannel()
+      channelInstance = createMemoSyncChannel()
     }
     channelInstance?.publish(event)
   }

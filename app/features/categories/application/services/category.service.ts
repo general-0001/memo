@@ -1,8 +1,8 @@
 import type { MemoCategory } from '@/shared/types/memo'
 import { extractTags } from '@/shared/utils/tags'
-import { useMemoDexie } from '@/shared/infrastructure/db'
+import { getCategoryRepository } from '../ports/category.repository'
 
-const withTimestamps = (entity: Partial<MemoCategory>): MemoCategory => {
+const buildCategory = (entity: Partial<MemoCategory>): MemoCategory => {
   const now = new Date().toISOString()
   return {
     id: entity.id ?? crypto.randomUUID(),
@@ -16,43 +16,39 @@ const withTimestamps = (entity: Partial<MemoCategory>): MemoCategory => {
 }
 
 export const fetchAllCategories = async (): Promise<MemoCategory[]> => {
-  const db = useMemoDexie()
-  return db.categories.orderBy('createdAt').toArray()
+  const repository = getCategoryRepository()
+  return repository.fetchAll()
 }
 
 export const createCategory = async (payload: Partial<MemoCategory>): Promise<MemoCategory> => {
-  const db = useMemoDexie()
-  const category = withTimestamps({
+  const repository = getCategoryRepository()
+  const category = buildCategory({
     ...payload,
     tags: extractTags(`${payload.title ?? ''} ${payload.body ?? ''}`),
   })
-  await db.categories.put(category)
-  return category
+  return repository.create(category)
 }
 
 export const updateCategory = async (
   id: string,
   payload: Partial<MemoCategory>,
 ): Promise<MemoCategory | null> => {
-  const db = useMemoDexie()
-  const current = await db.categories.get(id)
+  const repository = getCategoryRepository()
+  const current = await repository.findById(id)
   if (!current) {
     return null
   }
+
   const next: MemoCategory = {
     ...current,
     ...payload,
     tags: extractTags(`${payload.title ?? current.title} ${payload.body ?? current.body}`),
     updatedAt: new Date().toISOString(),
   }
-  await db.categories.put(next)
-  return next
+  return repository.update(next)
 }
 
 export const deleteCategory = async (id: string): Promise<void> => {
-  const db = useMemoDexie()
-  await db.transaction('rw', db.categories, db.memos, async () => {
-    await db.memos.where('categoryId').equals(id).delete()
-    await db.categories.delete(id)
-  })
+  const repository = getCategoryRepository()
+  await repository.delete(id)
 }
