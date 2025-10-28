@@ -37,7 +37,7 @@
 - **アプリケーション層**: Category/Memo サービスは `application/services` 内でポートを取得し、Pinia ストアは `app/features/app/application/stores/memoApp.store.ts` に集約。初期シード・同期は `application/services/memoSeed.service.ts` / `memoSync.service.ts` に分離。
 - **インフラ層**: Dexie 接続は `app/features/app/infrastructure/memoDexie.client.ts`。カテゴリ/メモ用アダプタは `app/features/{categories|memos}/infrastructure/dexie.*.repository.ts` としてポートへ登録。BroadcastChannel は `app/features/app/infrastructure/memoBroadcast.channel.ts`。
 - **プレゼンテーション層**: `AppPanel*` コンポーネントは Feature ごとの `presentation/components` に移動し、共有モーダル/ポップオーバーは `app/shared/presentation` で公開。
-- **スタイル基盤**: `assets/css/main.css` は `app_iconWrap` とトランジションプリセットのみを保持し、背景/枠線/余白は各コンポーネントで Tailwind ユーティリティを直接指定（ネスト時の副作用を防止）。
+- **スタイル基盤**: `app/assets/css/main.css` で Tailwind レイヤ（base/components）と共通ユーティリティを定義し、背景/枠線/余白は各コンポーネントで Tailwind ユーティリティを直接指定（ネスト時の副作用を防止）。
 - **共通ユーティリティ**: `app/shared/utils/highlight.ts` が検索語をハイライトセグメントへ分割し、一覧・詳細双方の表示モードで再利用。
 - **依存ルール**: Presentation → Application → Domain、Infrastructure → Application/Domain。Feature間は index 公開面経由で解決し、直接内部には依存しない。
 

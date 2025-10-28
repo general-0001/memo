@@ -231,7 +231,7 @@
   - `/categories/[id]`: カテゴリー詳細/編集 (`[id]=new` で作成)。
 - 画面構造は `template.html` の `app_*` クラスを忠実に再現。モーダル/ポップオーバーは `AppPanelModal/AppPanelPopover` を介してARIA属性とフォーカストラップを付与。ポップオーバーは Teleport で `body` 直下に描画され、トリガー要素の座標からオフセット計算して上下を自動反転する。
 - メモ/カテゴリー詳細の主要フィールドは「表示モード」と「編集モード」を分離し、表示状態をクリック（または Enter/Space）で編集に切り替え、フォーカスが外れたら表示に戻る。表示モードでは検索ハイライトを適用する。
-- スタイルは各 `AppPanel*` コンポーネントで Tailwind ユーティリティ（`bg-white border border-slate-200 rounded-xl shadow-sm` 等）を直接指定し、`assets/css/main.css` は `app_iconWrap` とトランジションプリセットのみを保持する。
+- スタイルは各 `AppPanel*` コンポーネントで Tailwind ユーティリティ（`bg-white border border-slate-200 rounded-xl shadow-sm` 等）を直接指定し、共通定義は `app/assets/css/main.css` の Tailwind レイヤ（base/components）で管理する。
 - API/イベントは無し（クライアント内完結）。
 
 ### 4.5 データ契約 / 永続化
