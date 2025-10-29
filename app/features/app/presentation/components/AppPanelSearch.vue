@@ -31,7 +31,7 @@ const handleIconClick = () => {
 
 <template>
   <div
-    class="app_panelSearch w-full bg-white border border-slate-200 rounded-xl shadow-sm relative flex items-center gap-2 p-2 sticky top-0 z-20 backdrop-blur"
+    class="app_panelSearch w-full bg-white border border-slate-200 rounded-lg shadow-sm relative flex items-center sticky top-0 z-20 backdrop-blur"
   >
     <button type="button" class="app_iconWrap p-2 absolute flex items-center cursor-pointer" @click="handleIconClick" :aria-label="isCatalog ? '検索' : '戻る'">
       <Icon :name="iconName" class="text-2xl" />

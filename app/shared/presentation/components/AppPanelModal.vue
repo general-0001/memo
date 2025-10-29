@@ -41,14 +41,14 @@ const { panelRef, layerStyle, handleKeydown, handlePointerDown } = usePanelLayer
     <transition name="app_fade">
       <div
         v-if="modelValue"
-        class="app_panelModal fixed inset-0 z-[100] bg-black/40 flex items-center justify-center px-4"
+        class="app_panelModal fixed inset-0 z-[100] bg-black/40 flex items-center justify-center px-4 text-sm"
         role="presentation"
       >
         <transition name="app_modal">
           <section
             v-show="modelValue"
             ref="panelRef"
-            class="app_panelModalBody space-y-4 w-full max-w-md focus:outline-none bg-white rounded-xl p-4 shadow-lg"
+            class="app_panelModalBody w-full max-w-md focus:outline-none bg-white rounded-xl shadow-lg"
             role="dialog"
             :aria-modal="true"
             :aria-labelledby="titleId"
@@ -57,7 +57,7 @@ const { panelRef, layerStyle, handleKeydown, handlePointerDown } = usePanelLayer
             @keydown="handleKeydown"
           >
             <header
-              class="app_panelModalHeader flex justify-between items-center cursor-move select-none"
+              class="app_panelModalHeader flex justify-between items-center cursor-move select-none p-2 border-b border-slate-200"
               @pointerdown="handlePointerDown"
             >
               <div class="app_panelModalHeaderTitle" :id="titleId">
@@ -65,14 +65,14 @@ const { panelRef, layerStyle, handleKeydown, handlePointerDown } = usePanelLayer
                   {{ title }}
                 </slot>
               </div>
-              <button class="app_iconWrap" type="button" aria-label="閉じる" @click="close">
-                <Icon name="material-symbols:close-rounded" size="20" aria-hidden="true" />
+              <button class="app_iconWrap opacity-50 cursor-pointer" type="button" aria-label="閉じる" @click="close">
+                <Icon name="material-symbols:close-rounded" aria-hidden="true" />
               </button>
             </header>
-            <div class="app_panelModalBody">
+            <div class="app_panelModalBody p-2">
               <slot />
             </div>
-            <footer class="app_panelModalFooter flex justify-end gap-2">
+            <footer class="app_panelModalFooter flex justify-end gap-2 p-2 border-t border-slate-200">
               <slot name="footer" />
             </footer>
           </section>

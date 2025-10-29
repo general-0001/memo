@@ -254,7 +254,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
   <div class="app_display flex flex-col gap-2 p-2 min-h-0 text-sm">
     <AppPanelSearch />
 
-    <div class="app_panelMemoDetail overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-sm p-2 space-y-3">
+    <div class="app_panelMemoDetail overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-sm">
       <div class="app_panelMemoDetailHeader flex gap-4 p-2 border-b border-slate-200 opacity-50">
         <div class="app_panelMemoDetailHeaderTitle flex items-center gap-2">
           <div class="app_iconWrap flex items-center">
@@ -267,7 +267,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
         <div class="relative">
           <button
             ref="categoryButtonRef"
-            class="app_panelMemoDetailHeaderCategory flex items-center gap-2"
+            class="app_panelMemoDetailHeaderCategory flex items-center gap-2 cursor-pointer"
             type="button"
             @click="showCategoryPopover = !showCategoryPopover"
           >
@@ -293,7 +293,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             :anchor="categoryButtonRef"
             :offset="12"
           >
-            <div class="app_panelPopoverList space-y-1">
+            <div class="app_panelPopoverList">
               <div
                 v-for="category in store.categories"
                 :key="category.id"
@@ -304,7 +304,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
                 "
               >
                 <div class="app_iconWrap">
-                  <Icon :name="category.icon" size="20" aria-hidden="true" />
+                  <Icon :name="category.icon" aria-hidden="true" />
                 </div>
                 <div class="app_panelPopoverItemText">
                   <template
@@ -363,13 +363,13 @@ const highlightSegments = (text: string): HighlightSegment[] => {
               type="text"
               placeholder="Type a icon name…"
               aria-label="アイコンの検索"
-              class="app_panelPopoverSearch w-full border border-slate-200 rounded-lg p-2"
+              class="app_panelPopoverSearch w-full border-b border-slate-200 p-2 appearance-none focus:outline-none"
             />
-            <div class="app_panelPopoverList space-y-1 max-h-48 overflow-y-auto mt-2">
+            <div class="app_panelPopoverList max-h-48 overflow-y-auto">
               <div
                 v-for="icon in filteredIcons"
                 :key="icon"
-                class="app_panelPopoverItem flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-2 rounded-lg"
+                class="app_panelPopoverItem flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-2"
                 @click="
                   memoForm.icon = icon;
                   showIconPopover = false
@@ -464,10 +464,10 @@ const highlightSegments = (text: string): HighlightSegment[] => {
         <p>この操作は取り消せません。削除してもよろしいですか？</p>
       </template>
       <template #footer>
-        <button type="button" class="px-4 py-2 rounded-lg border" @click="showDeleteModal = false">キャンセル</button>
+        <button type="button" class="p-2 rounded-lg bg-white border border-slate-200 cursor-pointer" @click="showDeleteModal = false">キャンセル</button>
         <button
           type="button"
-          class="px-4 py-2 rounded-lg bg-rose-600 text-white disabled:opacity-60"
+          class="p-2 rounded-lg bg-rose-600 text-white disabled:opacity-60 cursor-pointer"
           @click="confirmDeletion"
           :disabled="pending"
         >
