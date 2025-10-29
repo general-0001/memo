@@ -7,7 +7,7 @@ const store = useMemoAppStore()
 </script>
 
 <template>
-  <div class="app_display flex flex-col gap-2 p-2 min-h-0 text-sm">
+  <div class="app_display flex flex-col gap-2 p-2 min-h-0 text-sm flex-1">
     <AppPanelSearch />
     <AppPanelAddCategory />
     <AppPanelMemoCatalog />

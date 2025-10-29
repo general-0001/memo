@@ -205,10 +205,10 @@ const highlightSegments = (text: string): HighlightSegment[] => {
 </script>
 
 <template>
-  <div class="app_display flex flex-col gap-2 p-2 min-h-0 text-sm">
+  <div class="app_display flex flex-col gap-2 p-2 min-h-0 text-sm flex-1">
     <AppPanelSearch />
 
-    <div class="app_panelCategoryDetail overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-sm">
+    <div class="app_panelCategoryDetail flex flex-col flex-1 min-h-0 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       <div class="app_panelCategoryDetailHeader flex gap-4 p-2 border-b border-slate-200 opacity-50">
         <div class="app_panelCategoryDetailHeaderTitle flex items-center gap-2">
           <div class="app_iconWrap flex items-center">
@@ -240,7 +240,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
         </button>
       </div>
 
-      <div class="app_panelCategoryDetailBody bg-white p-2 flex gap-2 border-b border-slate-200">
+      <div class="app_panelCategoryDetailBody flex-1 min-h-0 overflow-y-auto bg-white p-2 flex gap-2 border-b border-slate-200">
         <div class="relative">
           <button
             ref="iconButtonRef"

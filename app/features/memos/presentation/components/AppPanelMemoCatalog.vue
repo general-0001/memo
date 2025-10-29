@@ -25,7 +25,7 @@ const highlightParts = (text: string): HighlightSegment[] => {
 </script>
 
 <template>
-  <div class="app_panelMemoCatalog overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-sm">
+  <div class="app_panelMemoCatalog flex-1 min-h-0 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-sm">
     <template v-if="hasData">
       <div v-for="{ category, memos } in catalog" :key="category.id">
         <div

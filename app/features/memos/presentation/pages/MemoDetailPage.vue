@@ -251,10 +251,10 @@ const highlightSegments = (text: string): HighlightSegment[] => {
 </script>
 
 <template>
-  <div class="app_display flex flex-col gap-2 p-2 min-h-0 text-sm">
+  <div class="app_display flex flex-col gap-2 p-2 min-h-0 text-sm flex-1">
     <AppPanelSearch />
 
-    <div class="app_panelMemoDetail overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-sm">
+    <div class="app_panelMemoDetail flex flex-col flex-1 min-h-0 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       <div class="app_panelMemoDetailHeader flex gap-4 p-2 border-b border-slate-200 opacity-50">
         <div class="app_panelMemoDetailHeaderTitle flex items-center gap-2">
           <div class="app_iconWrap flex items-center">
@@ -293,11 +293,11 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             :anchor="categoryButtonRef"
             :offset="12"
           >
-            <div class="app_panelPopoverList">
+            <div class="app_panelPopoverList overflow-hidden">
               <div
                 v-for="category in store.categories"
                 :key="category.id"
-                class="app_panelPopoverItem flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-2 rounded-lg"
+                class="app_panelPopoverItem flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-2"
                 @click="
                   memoForm.categoryId = category.id;
                   showCategoryPopover = false
@@ -341,7 +341,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
         </button>
       </div>
 
-      <div class="app_panelMemoDetailBody bg-white p-2 flex gap-2 border-b border-slate-200">
+      <div class="app_panelMemoDetailBody flex-1 min-h-0 overflow-y-auto bg-white p-2 flex gap-2 border-b border-slate-200">
         <div class="relative">
           <button
             ref="iconButtonRef"
