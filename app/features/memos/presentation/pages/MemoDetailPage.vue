@@ -383,7 +383,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             </div>
           </AppPanelPopover>
         </div>
-        <div class="app_panelMemoDetailSet w-full space-y-2">
+        <div class="app_panelMemoDetailSet flex flex-col flex-1 min-h-0 space-y-2">
           <div
             v-if="!isTitleEditing"
             class="app_panelMemoDetailTitleDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
@@ -410,7 +410,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
           />
           <div
             v-if="!isBodyEditing"
-            class="app_panelMemoDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelMemoDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 flex-1 min-h-0 overflow-y-auto transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
             role="button"
             tabindex="0"
             aria-label="メモの内容を編集"
@@ -428,7 +428,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             ref="bodyTextareaRef"
             v-model="memoForm.body"
             rows="6"
-            class="app_panelMemoDetailParagraph w-full border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelMemoDetailParagraph w-full border border-slate-200 rounded-lg p-2 flex-1 min-h-0 overflow-y-auto focus:outline-none focus:ring-2 focus:ring-slate-200"
             placeholder="メモの内容"
             @blur="finishBodyEditing"
             @keydown="handleBodyInputKeydown"

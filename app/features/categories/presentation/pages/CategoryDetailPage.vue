@@ -281,7 +281,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             </div>
           </AppPanelPopover>
         </div>
-        <div class="app_panelCategoryDetailSet w-full space-y-2">
+        <div class="app_panelCategoryDetailSet flex flex-col flex-1 min-h-0 space-y-2">
           <div
             v-if="!isTitleEditing"
             class="app_panelCategoryDetailTitleDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
@@ -311,7 +311,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
           />
           <div
             v-if="!isBodyEditing"
-            class="app_panelCategoryDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelCategoryDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 flex-1 min-h-0 overflow-y-auto transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
             role="button"
             tabindex="0"
             aria-label="カテゴリーの内容を編集"
@@ -332,7 +332,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             ref="bodyTextareaRef"
             v-model="categoryForm.body"
             rows="6"
-            class="app_panelCategoryDetailParagraph w-full border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelCategoryDetailParagraph w-full border border-slate-200 rounded-lg p-2 flex-1 min-h-0 overflow-y-auto focus:outline-none focus:ring-2 focus:ring-slate-200"
             placeholder="カテゴリーの内容"
             @blur="finishBodyEditing"
             @keydown="handleBodyInputKeydown"
