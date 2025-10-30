@@ -125,7 +125,7 @@ onBeforeUnmount(() => {
       <div
         v-if="modelValue"
         ref="panelRef"
-        class="app_panelPopover bg-white border border-slate-300 shadow-xl rounded-xl"
+        class="app_panelPopover bg-white border border-slate-300 shadow-xl rounded-xl overflow-hidden"
         role="dialog"
         :aria-label="ariaLabel"
         tabindex="-1"
@@ -142,7 +142,7 @@ onBeforeUnmount(() => {
     <div
       v-if="modelValue"
       ref="panelRef"
-      class="app_panelPopover bg-white border border-slate-300 shadow-xl rounded-xl p-2"
+      class="app_panelPopover bg-white border border-slate-300 shadow-xl rounded-xl p-2 overflow-hidden"
       role="dialog"
       :aria-label="ariaLabel"
       tabindex="-1"

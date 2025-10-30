@@ -255,8 +255,8 @@ const highlightSegments = (text: string): HighlightSegment[] => {
     <AppPanelSearch />
 
     <div class="app_panelMemoDetail flex flex-col flex-1 min-h-0 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-      <div class="app_panelMemoDetailHeader flex gap-4 p-2 border-b border-slate-200 opacity-50">
-        <div class="app_panelMemoDetailHeaderTitle flex items-center gap-2">
+      <div class="app_panelMemoDetailHeader flex gap-4 p-2 border-b border-slate-200">
+        <div class="app_panelMemoDetailHeaderTitle flex items-center gap-1 opacity-50">
           <div class="app_iconWrap flex items-center">
             <Icon name="material-symbols:edit-note-rounded" size="20" aria-hidden="true" />
           </div>
@@ -267,7 +267,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
         <div class="relative">
           <button
             ref="categoryButtonRef"
-            class="app_panelMemoDetailHeaderCategory flex items-center gap-2 cursor-pointer"
+            class="app_panelMemoDetailHeaderCategory flex items-center gap-1 cursor-pointer opacity-50 hover:opacity-100 transition-opacity"
             type="button"
             @click="showCategoryPopover = !showCategoryPopover"
           >
@@ -297,7 +297,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
               <div
                 v-for="category in store.categories"
                 :key="category.id"
-                class="app_panelPopoverItem flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-2"
+                class="app_panelPopoverItem flex items-center gap-1 cursor-pointer hover:bg-slate-100 p-2"
                 @click="
                   memoForm.categoryId = category.id;
                   showCategoryPopover = false
@@ -319,13 +319,13 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             </div>
           </AppPanelPopover>
         </div>
-        <div class="app_panelMemoDetailHeaderRegistration items-center flex gap-2">
+        <div class="app_panelMemoDetailHeaderRegistration items-center flex gap-1 opacity-50">
           <div class="app_iconWrap flex items-center">
             <Icon name="material-symbols:event-available-rounded" aria-hidden="true" />
           </div>
           <div class="app_panelMemoDetailHeaderRegistrationText">{{ formatDate(createdAt) }}</div>
         </div>
-        <div class="app_panelMemoDetailHeaderUpdate flex items-center">
+        <div class="app_panelMemoDetailHeaderUpdate flex gap-1 items-center opacity-50">
           <div class="app_iconWrap flex items-center">
             <Icon name="material-symbols:update-rounded" aria-hidden="true" />
           </div>
@@ -333,7 +333,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
         </div>
         <button
           v-if="!isNew"
-          class="app_memoDelete app_iconWrap ml-auto flex items-center cursor-pointer opacity-50"
+          class="app_memoDelete app_iconWrap ml-auto flex items-center cursor-pointer opacity-30 hover:opacity-100 transition-opacity"
           type="button"
           @click="showDeleteModal = true"
         >
@@ -383,10 +383,10 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             </div>
           </AppPanelPopover>
         </div>
-        <div class="app_panelMemoDetailSet flex flex-col flex-1 min-h-0 space-y-2">
+        <div class="app_panelMemoDetailSet flex flex-col flex-1 min-h-0 space-y-2 overflow-hidden">
           <div
             v-if="!isTitleEditing"
-            class="app_panelMemoDetailTitleDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelMemoDetailTitleDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200 overflow-x-auto"
             role="button"
             tabindex="0"
             aria-label="メモのタイトルを編集"
@@ -403,14 +403,14 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             v-else
             ref="titleInputRef"
             v-model="memoForm.title"
-            class="app_panelMemoDetailTitle w-full border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelMemoDetailTitle w-full border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-slate-200 break-all"
             placeholder="メモのタイトル"
             @blur="finishTitleEditing"
             @keydown="handleTitleInputKeydown"
           />
           <div
             v-if="!isBodyEditing"
-            class="app_panelMemoDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 flex-1 min-h-0 overflow-y-auto transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelMemoDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 flex-1 min-h-0 overflow-y-auto transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200 break-all"
             role="button"
             tabindex="0"
             aria-label="メモの内容を編集"

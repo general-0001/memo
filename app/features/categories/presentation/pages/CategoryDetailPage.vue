@@ -209,8 +209,8 @@ const highlightSegments = (text: string): HighlightSegment[] => {
     <AppPanelSearch />
 
     <div class="app_panelCategoryDetail flex flex-col flex-1 min-h-0 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-      <div class="app_panelCategoryDetailHeader flex gap-4 p-2 border-b border-slate-200 opacity-50">
-        <div class="app_panelCategoryDetailHeaderTitle flex items-center gap-2">
+      <div class="app_panelCategoryDetailHeader flex gap-4 p-2 border-b border-slate-200">
+        <div class="app_panelCategoryDetailHeaderTitle flex items-center gap-2 opacity-50">
           <div class="app_iconWrap flex items-center">
             <Icon name="material-symbols:folder-open-rounded" aria-hidden="true" />
           </div>
@@ -218,13 +218,13 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             {{ isNew ? 'カテゴリーの作成' : 'カテゴリーの詳細・編集' }}
           </div>
         </div>
-        <div class="app_panelCategoryDetailHeaderRegistration items-center flex gap-2">
+        <div class="app_panelCategoryDetailHeaderRegistration items-center flex gap-2 opacity-50">
           <div class="app_iconWrap flex items-center">
             <Icon name="material-symbols:event-available-rounded" aria-hidden="true" />
           </div>
           <div class="app_panelCategoryDetailHeaderRegistrationText">{{ formatDate(createdAt) }}</div>
         </div>
-        <div class="app_panelCategoryDetailHeaderUpdate items-center flex gap-2">
+        <div class="app_panelCategoryDetailHeaderUpdate items-center flex gap-2 opacity-50">
           <div class="app_iconWrap flex items-center">
             <Icon name="material-symbols:update-rounded" aria-hidden="true" />
           </div>
@@ -232,7 +232,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
         </div>
         <button
           v-if="!isNew"
-          class="app_memoDelete app_iconWrap ml-auto flex items-center cursor-pointer opacity-50"
+          class="app_memoDelete app_iconWrap ml-auto flex items-center cursor-pointer opacity-30 hover:opacity-100 transition-opacity"
           type="button"
           @click="showDeleteModal = true"
         >
@@ -281,10 +281,10 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             </div>
           </AppPanelPopover>
         </div>
-        <div class="app_panelCategoryDetailSet flex flex-col flex-1 min-h-0 space-y-2">
+        <div class="app_panelCategoryDetailSet flex flex-col flex-1 min-h-0 space-y-2 overflow-hidden">
           <div
             v-if="!isTitleEditing"
-            class="app_panelCategoryDetailTitleDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelCategoryDetailTitleDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text focus:outline-none overflow-x-scroll"
             role="button"
             tabindex="0"
             aria-label="カテゴリーのタイトルを編集"
@@ -304,14 +304,14 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             v-else
             ref="titleInputRef"
             v-model="categoryForm.title"
-            class="app_panelCategoryDetailTitle w-full border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelCategoryDetailTitle w-full border border-slate-200 rounded-lg p-2 focus:outline-none"
             placeholder="カテゴリーのタイトル"
             @blur="finishTitleEditing"
             @keydown="handleTitleInputKeydown"
           />
           <div
             v-if="!isBodyEditing"
-            class="app_panelCategoryDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 flex-1 min-h-0 overflow-y-auto transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelCategoryDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 flex-1 min-h-0 overflow-y-auto focus:outline-none break-all"
             role="button"
             tabindex="0"
             aria-label="カテゴリーの内容を編集"
@@ -332,7 +332,7 @@ const highlightSegments = (text: string): HighlightSegment[] => {
             ref="bodyTextareaRef"
             v-model="categoryForm.body"
             rows="6"
-            class="app_panelCategoryDetailParagraph w-full border border-slate-200 rounded-lg p-2 flex-1 min-h-0 overflow-y-auto focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelCategoryDetailParagraph w-full border border-slate-200 rounded-lg p-2 flex-1 min-h-0 overflow-y-auto focus:outline-none break-all"
             placeholder="カテゴリーの内容"
             @blur="finishBodyEditing"
             @keydown="handleBodyInputKeydown"
