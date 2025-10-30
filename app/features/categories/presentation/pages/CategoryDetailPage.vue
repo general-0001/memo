@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch, nextTick, onMounted } from 'vue'
-import { useRouter, useRoute } from '#imports'
+import { computed, reactive, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute, onBeforeRouteLeave } from '#imports'
 import { AppPanelSearch, useMemoAppStore } from '@/features/app'
-import { AppPanelModal, AppPanelPopover } from '@/shared/presentation'
+import { AppPanelModal, AppPanelPopover, AppPanelAutoSaveStatus } from '@/shared/presentation'
 import type { MemoCategory } from '@/shared/types/memo'
 import { buildHighlightSegments, type HighlightSegment } from '@/shared/utils/highlight'
 
@@ -34,6 +34,17 @@ const createdAt = ref<string | null>(null)
 const updatedAt = ref<string | null>(null)
 const pending = ref(false)
 const errorMessage = ref<string | null>(null)
+const autoSaveState = ref<'idle' | 'saving' | 'saved' | 'error'>(isNew.value ? 'idle' : 'saved')
+const autoSaveError = ref<string | null>(null)
+const isFormInitialized = ref(false)
+const isSaving = ref(false)
+const shouldRetrySave = ref(false)
+const isPopulatingForm = ref(false)
+const lastSavedSnapshot = ref('')
+const autoSaveResetTimer = ref<number | null>(null)
+let activeSavePromise: Promise<void> | null = null
+const AUTO_SAVE_DELAY = 500
+let scheduledAutoSaveHandle: number | null = null
 const showIconPopover = ref(false)
 const iconButtonRef = ref<HTMLElement | null>(null)
 const iconSearch = ref('')
@@ -122,19 +133,97 @@ onMounted(() => {
 })
 
 const populate = (category: MemoCategory | null) => {
+  isFormInitialized.value = false
+  isPopulatingForm.value = true
   if (category) {
     categoryForm.title = category.title
     categoryForm.body = category.body
     categoryForm.icon = category.icon
     createdAt.value = category.createdAt
     updatedAt.value = category.updatedAt
+  } else {
+    categoryForm.title = ''
+    categoryForm.body = ''
+    categoryForm.icon = 'material-symbols:folder-open-rounded'
+    createdAt.value = null
+    updatedAt.value = null
+  }
+  lastSavedSnapshot.value = buildSnapshot()
+  autoSaveState.value = category ? 'saved' : 'idle'
+  autoSaveError.value = null
+  isPopulatingForm.value = false
+  isFormInitialized.value = true
+}
+
+const buildSnapshot = () =>
+  JSON.stringify({
+    title: categoryForm.title ?? '',
+    body: categoryForm.body ?? '',
+    icon: categoryForm.icon ?? '',
+  })
+
+const hasUnsavedChanges = () => buildSnapshot() !== lastSavedSnapshot.value
+
+const clearAutoSaveTimer = () => {
+  if (typeof window === 'undefined') {
     return
   }
-  categoryForm.title = ''
-  categoryForm.body = ''
-  categoryForm.icon = 'material-symbols:folder-open-rounded'
-  createdAt.value = null
-  updatedAt.value = null
+  if (autoSaveResetTimer.value !== null) {
+    window.clearTimeout(autoSaveResetTimer.value)
+    autoSaveResetTimer.value = null
+  }
+}
+
+const scheduleAutoSaveReset = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  clearAutoSaveTimer()
+  autoSaveResetTimer.value = window.setTimeout(() => {
+    if (!hasUnsavedChanges()) {
+      autoSaveState.value = 'idle'
+    }
+    autoSaveResetTimer.value = null
+  }, 2000)
+}
+
+const cancelScheduledAutoSave = () => {
+  if (typeof window === 'undefined') {
+    scheduledAutoSaveHandle = null
+    return
+  }
+  if (scheduledAutoSaveHandle !== null) {
+    window.clearTimeout(scheduledAutoSaveHandle)
+    scheduledAutoSaveHandle = null
+  }
+}
+
+const scheduleAutoSave = () => {
+  if (!isFormInitialized.value || isPopulatingForm.value) {
+    return
+  }
+  if (typeof window === 'undefined') {
+    return
+  }
+  cancelScheduledAutoSave()
+  scheduledAutoSaveHandle = window.setTimeout(() => {
+    scheduledAutoSaveHandle = null
+    void executeSave('auto')
+  }, AUTO_SAVE_DELAY)
+}
+
+const handleRetry = async () => {
+  cancelScheduledAutoSave()
+  await executeSave('manual')
+}
+
+const completeAndReturn = async () => {
+  cancelScheduledAutoSave()
+  await executeSave('manual')
+  if (autoSaveState.value === 'error') {
+    return
+  }
+  await router.push('/')
 }
 
 watch(
@@ -155,30 +244,86 @@ const formatDate = (value: string | null) => {
   }).format(new Date(value))
 }
 
-const saveCategory = async () => {
-  pending.value = true
-  errorMessage.value = null
-  try {
-    if (isNew.value) {
-      const category = await store.addCategory({
-        title: categoryForm.title,
-        body: categoryForm.body,
-        icon: categoryForm.icon,
-      })
-      await router.replace(`/categories/${category.id}`)
-    } else {
-      await store.editCategory(categoryId.value, {
-        title: categoryForm.title,
-        body: categoryForm.body,
-        icon: categoryForm.icon,
-      })
-    }
-  } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : String(error)
-  } finally {
-    pending.value = false
+const executeSave = async (reason: 'auto' | 'manual') => {
+  if (!isFormInitialized.value || isPopulatingForm.value) {
+    return
   }
+
+  if (isSaving.value) {
+    shouldRetrySave.value = true
+    return activeSavePromise ?? Promise.resolve()
+  }
+
+  if (!hasUnsavedChanges()) {
+    if (reason === 'manual' && autoSaveState.value !== 'error') {
+      autoSaveState.value = 'saved'
+      scheduleAutoSaveReset()
+    }
+    return
+  }
+
+  isSaving.value = true
+  autoSaveState.value = 'saving'
+  autoSaveError.value = null
+  errorMessage.value = null
+  const snapshotBeforeSave = buildSnapshot()
+  const wasNew = isNew.value
+
+  const run = (async () => {
+    try {
+      if (wasNew) {
+        const category = await store.addCategory({
+          title: categoryForm.title,
+          body: categoryForm.body,
+          icon: categoryForm.icon,
+        })
+        createdAt.value = category.createdAt
+        updatedAt.value = category.updatedAt
+        lastSavedSnapshot.value = snapshotBeforeSave
+        await router.replace(`/categories/${category.id}`)
+      } else {
+        const category = await store.editCategory(categoryId.value, {
+          title: categoryForm.title,
+          body: categoryForm.body,
+          icon: categoryForm.icon,
+        })
+        if (!category) {
+          throw new Error('対象のカテゴリーが見つかりませんでした')
+        }
+        updatedAt.value = category.updatedAt
+        lastSavedSnapshot.value = snapshotBeforeSave
+      }
+      autoSaveState.value = 'saved'
+      autoSaveError.value = null
+      scheduleAutoSaveReset()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      errorMessage.value = message
+      autoSaveError.value = message
+      autoSaveState.value = 'error'
+    } finally {
+      isSaving.value = false
+      activeSavePromise = null
+      if (shouldRetrySave.value) {
+        shouldRetrySave.value = false
+        await executeSave('auto')
+      }
+    }
+  })()
+
+  activeSavePromise = run
+  return run
 }
+
+watch(
+  () => [categoryForm.title, categoryForm.body, categoryForm.icon],
+  () => {
+    if (!isFormInitialized.value || isPopulatingForm.value) {
+      return
+    }
+    scheduleAutoSave()
+  },
+)
 
 const confirmDeletion = async () => {
   if (isNew.value || !currentCategory.value) {
@@ -202,6 +347,20 @@ const highlightSegments = (text: string): HighlightSegment[] => {
   const base = text ?? ''
   return buildHighlightSegments(base, searchQuery.value)
 }
+
+onBeforeRouteLeave(async () => {
+  cancelScheduledAutoSave()
+  await executeSave('manual')
+  if (autoSaveState.value === 'error') {
+    return false
+  }
+  return true
+})
+
+onUnmounted(() => {
+  cancelScheduledAutoSave()
+  clearAutoSaveTimer()
+})
 </script>
 
 <template>
@@ -340,17 +499,15 @@ const highlightSegments = (text: string): HighlightSegment[] => {
         </div>
       </div>
 
-      <div class="flex justify-end gap-2 p-2">
-        <button type="button" class="p-2 rounded-lg bg-white border border-slate-200 cursor-pointer" @click="router.push('/')" :disabled="pending">
-          キャンセル
-        </button>
+      <div class="flex items-center justify-between gap-2 p-2">
+        <AppPanelAutoSaveStatus :state="autoSaveState" :error-message="autoSaveError" @retry="handleRetry" />
         <button
           type="button"
           class="p-2 rounded-lg bg-slate-800 text-white disabled:opacity-50 cursor-pointer"
-          @click="saveCategory"
-          :disabled="pending"
+          @click="completeAndReturn"
+          :disabled="isSaving || pending"
         >
-          {{ isNew ? '作成' : '更新' }}
+          完了
         </button>
       </div>
     </div>

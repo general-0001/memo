@@ -80,6 +80,8 @@ tests/             # Vitest（unit / e2e）
    BroadcastChannel (`memoBroadcast.channel.ts`) で CRUD/並び替えイベント (payload に ids / sourceCategoryId / targetCategoryId) を通知し、受信側は `refreshFromDb()` を再実行。
 5. **並び替え (D&D + キーボード)**  
    `AppPanelMemoCatalog` のドラッグイベントが `moveMemo()` を呼び出し楽観的更新 → `reorderMemo()` が同一/別カテゴリーの順序を正規化し、更新後イベントを Broadcast。キーボード操作は同一カテゴリー内の並び替えをサポート。
+6. **自動保存**  
+   メモ/カテゴリー詳細はフォームの変更を 500ms デバウンスして `store.add*/edit*` を呼び出し、保存状態をステータス表示。保存中は重複リクエストを待機し、完了後に BroadcastChannel/Storage イベントで他タブへ同期する。
 
 ---
 
@@ -106,6 +108,12 @@ tests/             # Vitest（unit / e2e）
    - `docs/features.md` を最新仕様（クロスカテゴリー D&D）へ更新。  
    - 新規ユニットテスト `tests/unit/memo.service.spec.ts` / `tests/unit/memo.sync.service.spec.ts` で並び替えと同期フォールバックを検証。  
    - `pnpm vitest run tests/unit`, `pnpm typecheck` を実行済み。
+8. **自動保存 UX**  
+   - メモ/カテゴリー詳細に自動保存（500ms デバウンス）と保存ステータス表示を追加。  
+   - フッターアクションを「完了」に統一し、保存エラー時はステータスの「再試行」から手動再実行できるようにした。
+9. **UI ポリッシュ**  
+   - 検索バーの虫眼鏡アイコン（一覧時）は入力フォーカス/選択、一覧外では戻るとして振る舞いを整理。  
+   - カテゴリ本文が空の場合は一覧に説明を表示せず、ダミーテキストを排除した。
 
 ---
 
@@ -166,4 +174,4 @@ pnpm vitest run tests/unit
 
 ---
 
-本レポート更新日: 2025-10-29  
+本レポート更新日: 2025-10-31  

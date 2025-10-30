@@ -249,11 +249,9 @@ const handleMemoKeydown = async (
                 <span v-else>{{ segment.text }}</span>
               </template>
             </div>
-            <div class="app_panelMemoCatalogParagraph opacity-50">
+            <div v-if="category.body?.trim()" class="app_panelMemoCatalogParagraph opacity-50">
               <template
-                v-for="(segment, index) in highlightParts(
-                  fallback(category.body, 'カテゴリーの内容が設定されていません'),
-                )"
+                v-for="(segment, index) in highlightParts(category.body ?? '')"
                 :key="`category-body-${category.id}-${index}`"
               >
                 <mark v-if="segment.active" class="app_searchHighlight">{{ segment.text }}</mark>

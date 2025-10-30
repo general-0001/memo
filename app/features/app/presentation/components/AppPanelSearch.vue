@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter, useRoute } from '#imports'
 import { useMemoAppStore } from '@/features/app'
 
@@ -17,8 +17,12 @@ const query = computed({
   set: (value: string) => store.setSearch(value),
 })
 
+const searchInputRef = ref<HTMLInputElement | null>(null)
+
 const handleIconClick = () => {
   if (isCatalog.value) {
+    searchInputRef.value?.focus()
+    searchInputRef.value?.select()
     return
   }
   if (history.length > 1) {
@@ -37,6 +41,7 @@ const handleIconClick = () => {
       <Icon :name="iconName" class="text-2xl" />
     </button>
     <input
+      ref="searchInputRef"
       v-model="query"
       type="text"
       placeholder="Type a search…"
