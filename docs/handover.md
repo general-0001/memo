@@ -1,142 +1,163 @@
 # Handover Report — Memo Workspace (Nuxt 4 / IndexedDB)
 
-> 目的: 新任AI/開発者が「現状把握→環境セットアップ→動作確認→改修再開」を 30 分以内で完了できるよう、プロジェクトの構造・状態・課題・次アクションを一枚に集約する。
+> 目的: 新任 AI / 開発者が「現状把握 → セットアップ → 動作確認 → 改修再開」を 30 分以内に完了できるよう、プロジェクト構造・状態・直近の変更・課題・次アクションを網羅的に共有する。
 
 ---
 
-## 1. スナップショット（概要）
-- **プロジェクト**: Memo Workspace（Nuxt 4 + Tailwind v4 + Pinia + IndexedDB）
-- **ミッション/成果物**: ブラウザ単体で完結するメモ/カテゴリー管理UI。リアクティブ切替・タグ抽出・複数タブ同期・Material Line Icons 準拠。
-- **現在フェーズ**: In Dev（UI/ステート/永続化は稼働、アーキテクチャ再編済み、エクスポートや詳細バリデーションは未実装）
-- **スコープ**: メモ一覧（`app_panelSearch/app_panelAddCategory/app_panelMemoCatalog`）、メモ詳細CRUD、カテゴリー詳細CRUD、IndexedDB永続化、BroadcastChannel同期。
-- **非対象**: サーバーAPI、エクスポート/インポート、認証、複雑なバリデーション。
-- **制約**: Nuxt 4.2.0 / Vue 3.5.22 / Tailwind v4.1.16 / Dexie 4.2.1 / Material Line Icons。UI構造は `template.html` の `app_*` クラスを厳守。
-- **主要リンク**: `docs/plan.md`, `docs/features.md#feat-feat-100`, `docs/architecture/structure-hybrid.md`, `docs/plan-refactoring.md`, `template.html`。
+## 1. スナップショット
+- **プロジェクト**: Memo Workspace（Nuxt 4 + Tailwind v4 + Pinia + Dexie/IndexedDB）
+- **現在ブランチ**: `memo/work-1`（未コミット変更あり）
+- **フェーズ**: In Dev（主要 UI/データフローは稼働、エクスポート・高度バリデーションは未実装）
+- **目的**: ブラウザ完結のメモ/カテゴリー管理。リアクティブ編集、タグ抽出、複数タブ同期、Material Symbols アイコン対応。
+- **スコープ**: メモ一覧 (`AppPanelMemoCatalog`)、検索/タグ抽出、メモ・カテゴリー CRUD、ドラッグ&ドロップ並び替え（クロスカテゴリー対応）、BroadcastChannel 同期。
+- **非対象**: サーバー永続化、認証、多ユーザー、外部 API、詳細バリデーション、エクスポート/インポート。
+- **制約**: Nuxt 4.2.0 / Vue 3.5.22 / Tailwind 4.1.16 / Dexie 4.2.1 / Material Symbols。UI構造は `template.html` の `app_*` クラス準拠。
+- **主要ドキュメント**: `docs/plan.md`, `docs/features.md#feat-feat-100`, `docs/architecture/structure-hybrid.md`, `docs/plan-refactoring.md`, 本 `handover.md`。
 
-## 2. ステークホルダーと役割（RACI）
-- **R（Responsible）**: 現行AI開発担当（実装・テスト・ドキュメント）
-- **A（Accountable）**: ユーザー/プロダクトオーナー
-- **C（Consulted）**: 将来のQA、デザイナ、セキュリティ/コンプライアンス担当
-- **I（Informed）**: 運用担当（将来想定）
-- **決定ログ**: `docs/plan.md`, `docs/features.md`, `docs/plan-refactoring.md`, 本 `handover.md`。
+---
 
-## 3. 8品質特性バランス
-| 特性 | 重み | 目標/指標 |
-| --- | --- | --- |
-| 実用性 | 20% | IndexedDBベースで即時利用可能、初期データ自動投入 |
-| 複雑性制御 | 15% | ハイブリッド構造（feature内レイヤ + index公開）で責務を局所化 |
-| 汎用性 | 10% | サーバーレス構成、Nuxt + Tailwind のベストプラクティス |
-| 柔軟性 | 10% | BroadcastChannel/タグ抽出で将来拡張を想定、ポート/アダプタで張り替え容易 |
-| 拡張性 | 15% | Dexieリポジトリ登録・プレゼンテーション分離で機能追加に耐える |
-| 堅牢性 | 10% | IndexedDB例外通知、同期再試行、フォーカストラップ |
-| 安全性 | 5% | ローカル利用前提、将来のデータ分類/暗号化は未定 |
-| 効率性 | 15% | ローカルDBで遅延ほぼゼロ、UIはTailwind utility で軽量 |
+## 2. ステークホルダー / RACI
+- **R (Responsible)**: 現行 AI エージェント（実装・検証・ドキュメント更新）
+- **A (Accountable)**: ユーザー / プロダクトオーナー
+- **C (Consulted)**: 将来の QA / デザイナ / セキュリティ担当
+- **I (Informed)**: 運用担当（想定）
+- **決定ログ**: `docs/plan*.md`, `docs/features.md`, 本書に集約。
 
-## 4. アーキテクチャ（ハイブリッド: スライス内レイヤ）
-- **構成**: `app/features/{app|categories|memos}` がそれぞれ `presentation/application/domain/infrastructure/index.ts` を持つ。`app/pages/*` は薄いラッパとして Feature プレゼンテーションを再利用。
-- **アプリケーション層**: Category/Memo サービスは `application/services` 内でポートを取得し、Pinia ストアは `app/features/app/application/stores/memoApp.store.ts` に集約。初期シード・同期は `application/services/memoSeed.service.ts` / `memoSync.service.ts` に分離。
-- **インフラ層**: Dexie 接続は `app/features/app/infrastructure/memoDexie.client.ts`。カテゴリ/メモ用アダプタは `app/features/{categories|memos}/infrastructure/dexie.*.repository.ts` としてポートへ登録。BroadcastChannel は `app/features/app/infrastructure/memoBroadcast.channel.ts`。
-- **プレゼンテーション層**: `AppPanel*` コンポーネントは Feature ごとの `presentation/components` に移動し、共有モーダル/ポップオーバーは `app/shared/presentation` で公開。
-- **スタイル基盤**: `app/assets/css/main.css` で Tailwind レイヤ（base/components）と共通ユーティリティを定義し、背景/枠線/余白は各コンポーネントで Tailwind ユーティリティを直接指定（ネスト時の副作用を防止）。
-- **共通ユーティリティ**: `app/shared/utils/highlight.ts` が検索語をハイライトセグメントへ分割し、一覧・詳細双方の表示モードで再利用。
-- **依存ルール**: Presentation → Application → Domain、Infrastructure → Application/Domain。Feature間は index 公開面経由で解決し、直接内部には依存しない。
+---
 
-## 5. インターフェース契約（UI）
-- **ルート**: `/`（一覧）、`/memos/[id|new]`, `/categories/[id|new]`。
-- **ページ構造**: 各 Nuxt ページは Feature プレゼンテーション (`MemoWorkspacePage`, `MemoDetailPage`, `CategoryDetailPage`) を描画。
-- **UI要素**: `app_panelSearch`, `app_panelAddCategory`, `app_panelMemoCatalog`, `app_panelMemoDetail`, `app_panelCategoryDetail`, `app_panelModal`, `app_panelPopover`, `app_panelError`。
-- **スタイル適用**: 各パネル/ボタンは `bg-white border border-slate-200 rounded-xl shadow-sm` などをコンポーネント側で付与し、`template.html` との対応を維持しつつ局所的に調整可能な構成。
-- **検索ハイライト**: 一覧とメモ/カテゴリー詳細の表示モードで一致箇所を `<mark class="app_searchHighlight">` で包み、視覚的に検索キーワードを強調。
-- **表示⇔編集切替**: メモ/カテゴリー詳細のタイトル・本文は表示ブロックをクリック/Enter/Spaceで編集モードに遷移し、フォーカスアウトまたは Esc で表示モードへ戻る。表示モードでは検索ハイライトと定型メッセージを提示。
-- **操作**: Nuxt ルーターと @nuxt/icon を利用。モーダル/ポップオーバーは focus trap + ARIA 属性を保持し、ポップオーバーは Teleport で `body` 直下に描画・トリガー座標からオフセット計算（上下自動反転）する。
-- **削除操作**: カテゴリー/メモの新規作成画面では削除ボタンを表示せず、既存エンティティのみ削除ダイアログを呼び出せる。
+## 3. 技術スタック & 環境
+| カテゴリ | 採用技術 |
+| --- | --- |
+| フロントエンド | Nuxt 4 (Vue 3, `<script setup>`), Vite, Tailwind CSS v4 |
+| 状態管理 | Pinia (`useMemoAppStore`) |
+| 永続化 | Dexie (IndexedDB) |
+| アイコン | `@nuxt/icon` + Material Symbols |
+| 補助 | `@vueuse/nuxt`, Tailwind 標準レイヤ |
+| テスト | Vitest（ユニット）、Playwright MCP（手動 E2E 想定） |
 
-## 6. データ/永続化
-- **DB**: IndexedDB 名 `memo_app_v1`（Dexie 4.2.1）。テーブル: `categories`, `memos`, `settings`。
-- **アダプタ登録**: `app/plugins/memo.client.ts` で `registerDexieCategoryRepository()` / `registerDexieMemoRepository()` を実行し、アプリケーションポートに注入。
-- **サンプルデータ**: `app/features/app/infrastructure/sample-data.ts` が初回起動時に Inbox/Planning/Research データを投入。
-- **タグ抽出**: `app/shared/utils/tags.ts` (`/#([\p{L}\p{N}_-]+)/giu`) で `#tag` 形式をユニーク化。
+---
 
-## 7. ユースケース / ワークフロー
-1. メモ一覧表示 → カテゴリー行クリックで `/categories/:id`。AppPanelCatalog でメモ行/追加ボタンを操作。
-2. `カテゴリーを追加` → 詳細ビューで作成後 `/categories/:id` へ遷移。
-3. メモ追加/編集 → `/memos/new?category=:id` または `/memos/:id`、モーダルで削除確定。
-4. アイコン・カテゴリー選択は `AppPanelPopover` でフォーカストラップ。
-5. BroadcastChannel で CRUD を他タブに通知し、イベント受信時は `refreshFromDb()` でDexieリロード。
-6. メモ/カテゴリー詳細のタイトル・本文は表示ブロックから編集モードへ切り替え、編集完了後はフォーカスアウトで表示へ戻す（表示時に検索ハイライトを適用）。
-
-## 8. セキュリティ / プライバシー
-- 認証なし・ローカル利用前提。将来的なPII対応時は暗号化/アクセス制御/監査証跡の追加が必要。
-
-## 9. レジリエンス / 回復性
-- IndexedDBエラーはストアの `errorMessage` 経由で `app_panelError` に表示。
-- Syncチャネルは `memoSync.service.ts` のファクトリで生成。BroadcastChannel非対応または破断時は `refreshFromDb()` のフォールバックを呼び出せる。
-- モーダル/ポップオーバーは Esc/外側クリックで確実に閉じ、フォーカストラップを解除。
-
-## 10. パフォーマンス / 容量
-- 全データはローカルDBで即時アクセス。主要操作は `O(n)`（メモ数に比例）。
-- SLO（暫定）: 一覧表示 < 100ms、CRUD < 150ms、検索レスポンス即時。
-
-## 11. 観測性 / 運用
-- 現状: Nuxt DevTools/ブラウザコンソールによる手動監視のみ。
-- 今後: Dexie アダプタに計測フックを追加し、Playwright 自動E2E + CI 連携を検討。
-
-## 12. A11y / i18n / SEO
-- テキストは日本語。モーダル/ポップオーバーは `role="dialog"` + `aria-modal` + フォーカストラップ済。
-- i18n/SEO は未着手（オフラインローカル用途）。
-
-## 13. 実行環境 / セットアップ
-```bash
-pnpm install          # 依存パッケージ
-pnpm dev              # http://localhost:3000 で起動
-pnpm typecheck        # vue-tsc strict
+## 4. リポジトリ構造（ハイブリッド: スライス内レイヤ）
 ```
-- IndexedDB 再初期化: ブラウザコンソールで `indexedDB.deleteDatabase('memo_app_v1')`。
-- 開発時は `pnpm typecheck` を随時実行し、BroadcastChannel の動作確認は複数タブで手動実施。
-
-## 14. テスト戦略 / 実施状況
-- **実施済み**: 2025-10-28 `pnpm typecheck`、Playwright MCP（カテゴリー/メモ CRUD・検索・モーダルのフェード/オーバーレイを再検証）。
-- **未実施**: 自動Vitest/Playwright suites、性能/耐久テスト。
-- **優先テスト**:
-  1. Dexie リポジトリアダプタ + ポートのユニットテスト。
-  2. メモ/カテゴリー詳細の表示⇔編集切替と検索ハイライトを Playwright で自動確認。
-  3. Playwright 自動E2E（メモ/カテゴリー CRUD → 検索 → 削除 → 同期確認）。
-  4. BroadcastChannel 非対応ブラウザでのフォールバック検証。
-
-## 15. リスク / 失敗モード
-- IndexedDB 非対応環境（プライベートモード等）→ UI 停止。現在はエラーバナー表示のみ。
-- BroadcastChannel 未サポート → 同期不可（フォールバック未実装）。
-- 大量データ時のパフォーマンス未検証。
-- エクスポート/インポート未実装のため、データ移行手段なし。
-- Tailwind v4 の `@layer components` は現状ビルド出力に乗らないため、共通スタイルはユーティリティクラス併用で管理（将来対応時の移行方針要確認）。
-
-## 16. 次アクション（優先度順）
-1. **High**: Dexie リポジトリ/ポートに対する自動テストと依存検証の追加。CI で `pnpm typecheck && pnpm test` を整備。
-2. **High**: メモ/カテゴリー詳細の表示⇔編集切替・検索ハイライトを含む Playwright 自動E2Eの整備。
-3. **High**: BroadcastChannel 非対応ブラウザ向けフォールバック（ポーリングや StorageEvent 等）とユーザー通知UIの実装。
-4. **Medium**: コンポーネント単位の Tailwind ユーティリティ適用方針をガイドライン化し、`template.html` やドキュメントとの整合を確認（main.css 最小化後のスタイル定義を周知）。
-5. **Medium**: エクスポート/インポート仕様・UI設計、IndexedDB スキーマ version 2 の計画。
-6. **Medium**: バリデーション（文字数/必須/タグ制限）とユーザーフィードバック（Toast）。
-7. **Low**: 観測性（操作ログ/メトリクス）の整備と i18n 下準備。
-
-## 17. 変更履歴（短縮）
-- 2025-10-29: 検索ハイライトを詳細画面の表示モードへ拡張し、共通ユーティリティ `highlight.ts` を導入。メモ/カテゴリー詳細のタイトル・本文を表示⇔編集モードに分離し、Esc/フォーカスアウトで復帰するUXへ更新。関連ドキュメント（本書・`docs/features.md`）を反映。
-- 2025-10-28: モーダルオーバーレイの視覚不具合を修正し、`main.css` を最小化。各 `AppPanel*` コンポーネントへ Tailwind ユーティリティを移し替え、検索ヒット箇所に `<mark>` 強調を導入。新規作成時の削除ボタンを非表示化し、Playwright MCP でページ表示・モーダル挙動・検索ハイライトを再確認。
-- 2025-10-27: Feature内レイヤ構造へ再編。Dexieリポジトリ/Syncサービス導入、モーダル等プレゼンテーションを Feature 配下へ移動、`docs/plan-refactoring.md` を作成。
-- 2025-10-26: メモアプリUI/IndexedDB/BroadcastChannel実装、AppPanelModal/Popoverのアクセシビリティ刷新、Playwrightで動作検証。
-- 2025-10-26: `docs/features.md` に FEAT-100 を追記。初版 `handover.md` 作成。
-
-## 18. オープン課題 / 未決事項
-- エクスポート/インポート機能の仕様とファイル形式。
-- BroadcastChannel 非対応時のフォールバック実装方針。
-- 自動テスト/CI 環境の整備。
-- 認証・マルチユーザー要件の有無確定。
-- 将来のデータ暗号化/セキュリティ要件。
+app/
+  features/
+    app/           # ワークスペース全体（Pinia ストア／同期／シード／ページ）
+    categories/    # カテゴリー CRUD
+    memos/         # メモ CRUD + 並び替え
+  shared/          # 共通 UI / ユーティリティ / インフラ
+  composition/     # 起動時コンポジション（Dexie 登録など）
+  pages/           # Nuxt ページ（Feature プレゼンテーションを再利用）
+  layouts/         # default レイアウト
+docs/              # アーキテクチャ・機能・計画ドキュメント
+tests/             # Vitest（unit / e2e）
+```
+- Feature ごとに `presentation / application / domain / infrastructure / index.ts` を保持。
+- Dexie クライアントは `app/shared/infrastructure/memoDexie.client.ts` に集約し、`app/composition/registerMemoInfrastructure.ts` からポート登録・ソート正規化を実行。
+- Nuxt ページは各 Feature のプレゼンテーションページを描画する薄いラッパとして構成。
 
 ---
 
-## クイックスタート
-1. `pnpm install && pnpm dev`
-2. ブラウザで `http://localhost:3000` を開く
-3. IndexedDB を再初期化したい場合はコンソールで `indexedDB.deleteDatabase('memo_app_v1')`
-4. `pnpm typecheck`（＋将来の `pnpm test`）を実行してから開発を開始
+## 5. データモデル / 永続化
+- IndexedDB 名: `memo_app_v1`
+- テーブル
+  - `categories`: `{ id, title, body, icon, tags[], createdAt, updatedAt }`
+  - `memos`: `{ id, categoryId, title, body, icon, tags[], sortOrder, createdAt, updatedAt }`
+  - `settings`: `{ id:'app', sampleSeeded, lastSync }`
+- Dexie schema v2 で `sortOrder` と `[categoryId+sortOrder]` インデックスを追加。`ensureMemoSortOrder()` により既存データをマイグレーション。
+- シード (`sample-data.ts`) は初回ロード時に Inbox / Planning / Research カテゴリーとメモを投入（sortOrder 付与済み）。
+- ドメインファクトリ（`memos/domain/memo.factory.ts`, `categories/domain/category.factory.ts`）でタグ抽出とソート値付与を統合管理。
+
+---
+
+## 6. 主要ワークフロー
+1. **起動/初期化**  
+   `registerMemoInfrastructure()` → Dexie ポート登録 → `ensureMemoSortOrder()` → `useMemoAppStore().initialize()`（シード + DB リフレッシュ + BroadcastChannel 購読）。
+2. **CRUD**  
+   アプリケーション層サービスがポートを通じて Dexie Repository を操作。カテゴリ削除時は関連メモを一括削除。
+3. **検索/タグ**  
+   Pinia `filteredCategories` がタイトル/本文の全文検索とタグ抽出結果を提供。`shared/utils/highlight.ts` がハイライト片を生成。
+4. **同期**  
+   BroadcastChannel (`memoBroadcast.channel.ts`) で CRUD/並び替えイベント (payload に ids / sourceCategoryId / targetCategoryId) を通知し、受信側は `refreshFromDb()` を再実行。
+5. **並び替え (D&D + キーボード)**  
+   `AppPanelMemoCatalog` のドラッグイベントが `moveMemo()` を呼び出し楽観的更新 → `reorderMemo()` が同一/別カテゴリーの順序を正規化し、更新後イベントを Broadcast。キーボード操作は同一カテゴリー内の並び替えをサポート。
+
+---
+
+## 7. 直近の変更（2025-10-29）
+1. **クロスカテゴリー D&D 対応**  
+   - `reorderMemo()` を拡張し、`sourceCategoryId` / `targetCategoryId` / `targetIndex` を入力とする。  
+   - Dexie Repository に `updateMany()` トランザクションと `getHighestSortOrder()` を追加。
+   - Broadcast イベント payload にカテゴリー情報を付加し、全タブ同期を向上。
+2. **インフラ再編**  
+   - Dexie クライアントを `shared/infrastructure` へ移設し、`registerMemoInfrastructure()` に集約。  
+   - `ensureMemoSortOrder()` で v1 → v2 のマイグレーションを安全に実施。
+3. **ドメインレイヤ確立**  
+   - メモ/カテゴリーのファクトリを導入し、タグ抽出・デフォルトアイコン・更新日時の責務を集約。
+4. **UI 改修**  
+   - カテゴリー全体がドロップ対象となるよう `AppPanelMemoCatalog` を改修（空カテゴリーでも受入可、視覚フィードバック強化）。  
+   - キーボード操作は従来の同一カテゴリ内並び替えを維持。
+5. **ドキュメント/テスト**  
+   - `docs/features.md` を最新仕様（クロスカテゴリー D&D）へ更新。  
+   - 新規ユニットテスト `tests/unit/memo.service.spec.ts` で同一/別カテゴリーパスを検証。  
+   - `pnpm vitest run tests/unit`, `pnpm typecheck` を実行済み。
+
+---
+
+## 8. 現在の差分（未コミット）
+- 主要ロジック: `app/features/app/application/stores/memoApp.store.ts`, `app/features/memos/application/services/memo.service.ts`, `app/features/memos/infrastructure/dexie.memo.repository.ts`, `app/features/memos/presentation/components/AppPanelMemoCatalog.vue`
+- 共通インフラ: `app/shared/infrastructure/memoDexie.client.ts`, `app/composition/registerMemoInfrastructure.ts`
+- ドメイン: `app/features/memos/domain/memo.factory.ts`, `app/features/categories/domain/category.factory.ts`
+- ドキュメント/テスト: `docs/features.md`, `docs/handover.md`, `tests/unit/memo.service.spec.ts`
+- 旧ファイル削除: `app/features/app/infrastructure/memoDexie.client.ts`
+
+---
+
+## 9. テスト / 検証状況
+- `pnpm typecheck` ✅
+- `pnpm vitest run tests/unit` ✅（5 テスト）
+- 手動確認（推奨継続）
+  1. クロスカテゴリー D&D → 並び順保持 → リロード後の確認
+  2. 複数タブでのリアルタイム同期
+  3. D&D 非対応環境（モバイル/キーボードのみ）の操作 UX
+
+---
+
+## 10. オープン課題 / リスク
+1. **BroadcastChannel 非対応ブラウザ**: 現状フォールバックなし。StorageEvent 等を用いた代替同期検討が必要。
+2. **E2E 自動化未整備**: Playwright による D&D とタブ同期の自動テストが未実装。
+3. **エクスポート/インポート欠如**: IndexedDB データのバックアップ手段がない。
+4. **UX/アクセシビリティ**: カテゴリー跨ぎのキーボード操作、エラー表示、フォームバリデーションは今後の改善対象。
+5. **セキュリティ将来対応**: ローカル利用前提。機密データ扱い時は暗号化/認証/権限管理が別途必要。
+
+---
+
+## 11. 推奨次ステップ
+1. Playwright で D&D + タブ同期を含むシナリオを自動化。
+2. BroadcastChannel フォールバック方針の決定と実装。
+3. `moveMemo` のキーボード操作でのカテゴリ跨ぎサポート検討（アクセシビリティ強化）。
+4. Dexie Repository の追加ユニットテスト（空カテゴリー、連続移動など）整備。
+5. エクスポート/インポート仕様策定と PoC 作成。
+
+---
+
+## 12. セットアップ / 動作確認
+```bash
+pnpm install
+pnpm dev              # http://localhost:3000
+pnpm typecheck
+pnpm vitest run tests/unit
+```
+- IndexedDB を再初期化する場合はブラウザコンソールで `indexedDB.deleteDatabase('memo_app_v1')` を実行。
+- 複数タブを開き、D&D 後に即座に同期されることを確認。
+
+---
+
+## 13. 参考リンク
+- アーキテクチャ指針: `docs/architecture/structure-hybrid.md`
+- 機能仕様（FEAT-100）: `docs/features.md#feat-feat-100`
+- 計画・課題: `docs/plan.md`, `docs/plan-refactoring.md`, `docs/plan-setup.md`
+- UI リファレンス: `template.html`
+
+---
+
+本レポート更新日: 2025-10-29  

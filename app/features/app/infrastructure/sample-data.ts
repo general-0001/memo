@@ -1,6 +1,6 @@
 import type { MemoCategory, MemoEntry, AppSettings } from '@/shared/types/memo'
 import { extractTags } from '@/shared/utils/tags'
-import { useMemoDexie } from './memoDexie.client'
+import { useMemoDexie } from '@/shared/infrastructure/memoDexie.client'
 
 const iso = (date: Date) => date.toISOString()
 
@@ -42,6 +42,7 @@ const sampleMemos: MemoEntry[] = [
     body: '一覧→詳細/編集→カテゴリー詳細のパターンを踏襲。#memoapp #flow',
     icon: 'material-symbols:rule-rounded',
     tags: extractTags('一覧→詳細/編集→カテゴリー詳細のパターンを踏襲。#memoapp #flow'),
+    sortOrder: 0,
     createdAt: iso(new Date('2024-12-20T09:15:00Z')),
     updatedAt: iso(new Date('2024-12-20T10:00:00Z')),
   },
@@ -52,6 +53,7 @@ const sampleMemos: MemoEntry[] = [
     body: 'BroadcastChannel で diff を投げ、IndexedDB を再読込する。#sync #realtime',
     icon: 'material-symbols:sync-rounded',
     tags: extractTags('BroadcastChannel で diff を投げ、IndexedDB を再読込する。#sync #realtime'),
+    sortOrder: 0,
     createdAt: iso(new Date('2024-12-22T06:00:00Z')),
     updatedAt: iso(new Date('2024-12-22T06:05:00Z')),
   },
@@ -62,6 +64,7 @@ const sampleMemos: MemoEntry[] = [
     body: 'Dexie を使って schema versioning。#indexeddb #dexie',
     icon: 'material-symbols:menu-book-rounded',
     tags: extractTags('Dexie を使って schema versioning。#indexeddb #dexie'),
+    sortOrder: 0,
     createdAt: iso(new Date('2024-12-25T04:10:00Z')),
     updatedAt: iso(new Date('2024-12-25T04:12:00Z')),
   },

@@ -6,8 +6,10 @@ export interface MemoRepositoryPort {
   findById(id: string): Promise<MemoEntry | undefined>
   create(entity: MemoEntry): Promise<MemoEntry>
   update(entity: MemoEntry): Promise<MemoEntry>
+  updateMany(entities: MemoEntry[]): Promise<void>
   delete(id: string): Promise<void>
   deleteByCategory(categoryId: string): Promise<void>
+  getHighestSortOrder(categoryId: string): Promise<number | null>
 }
 
 let memoRepository: MemoRepositoryPort | null = null

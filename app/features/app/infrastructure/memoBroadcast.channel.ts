@@ -1,6 +1,10 @@
 export type MemoBroadcastEvent =
   | { type: 'categories-updated'; payload?: { ids?: string[] } }
   | { type: 'memos-updated'; payload?: { ids?: string[] } }
+  | {
+      type: 'memos-reordered'
+      payload?: { ids?: string[]; sourceCategoryId?: string; targetCategoryId?: string }
+    }
 
 export const createMemoBroadcastChannel = () => {
   if (typeof window === 'undefined' || !('BroadcastChannel' in window)) {

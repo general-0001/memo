@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import type { MemoCategory, MemoEntry, PanelView } from '@/shared/types/memo'
 import { seedMemoWorkspaceData } from '@/features/app/application/services/memoSeed.service'
 import { fetchAllCategories, createCategory, updateCategory, deleteCategory } from '@/features/categories'
-import { fetchAllMemos, createMemo, updateMemo, deleteMemo } from '@/features/memos'
+import { fetchAllMemos, createMemo, updateMemo, deleteMemo, reorderMemo } from '@/features/memos'
 import {
   createMemoSyncChannel,
   type MemoBroadcastEvent,
@@ -11,6 +11,70 @@ import {
 } from '@/features/app/application/services/memoSync.service'
 
 const normalize = (value: string) => value.toLowerCase()
+const clampIndex = (value: number, max: number) => Math.min(Math.max(0, value), max)
+
+const sortCategories = (list: MemoCategory[]) =>
+  [...list].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+
+const sortMemos = (list: MemoEntry[]) =>
+  [...list].sort((a, b) => {
+    const orderDiff = (a.sortOrder ?? Number.MAX_SAFE_INTEGER) - (b.sortOrder ?? Number.MAX_SAFE_INTEGER)
+    if (orderDiff !== 0) {
+      return orderDiff
+    }
+    return a.createdAt.localeCompare(b.createdAt)
+  })
+
+const buildLocalMove = (
+  allMemos: MemoEntry[],
+  params: { memoId: string; sourceCategoryId: string; targetCategoryId: string; targetIndex: number },
+): {
+  sourceCategoryId: string
+  targetCategoryId: string
+  sourceMemos: MemoEntry[]
+  targetMemos: MemoEntry[]
+} | null => {
+  const { memoId, sourceCategoryId, targetCategoryId, targetIndex } = params
+  const memo = allMemos.find((item) => item.id === memoId && item.categoryId === sourceCategoryId)
+  if (!memo) {
+    return null
+  }
+
+  const sourceList = allMemos.filter((item) => item.categoryId === sourceCategoryId)
+  const targetBase =
+    sourceCategoryId === targetCategoryId
+      ? sourceList.filter((item) => item.id !== memoId)
+      : allMemos.filter((item) => item.categoryId === targetCategoryId)
+
+  const insertIndex = clampIndex(targetIndex, targetBase.length)
+  const movedMemo: MemoEntry = { ...memo, categoryId: targetCategoryId }
+
+  if (sourceCategoryId === targetCategoryId) {
+    const working = [...targetBase]
+    working.splice(insertIndex, 0, movedMemo)
+    const normalized = working.map((item, index) => ({ ...item, sortOrder: index }))
+    return {
+      sourceCategoryId,
+      targetCategoryId,
+      sourceMemos: normalized,
+      targetMemos: normalized,
+    }
+  }
+
+  const sourceWithout = sourceList.filter((item) => item.id !== memoId)
+  const workingTarget = [...targetBase]
+  workingTarget.splice(insertIndex, 0, movedMemo)
+
+  const normalizedSource = sourceWithout.map((item, index) => ({ ...item, sortOrder: index }))
+  const normalizedTarget = workingTarget.map((item, index) => ({ ...item, sortOrder: index }))
+
+  return {
+    sourceCategoryId,
+    targetCategoryId,
+    sourceMemos: normalizedSource,
+    targetMemos: normalizedTarget,
+  }
+}
 
 export const useMemoAppStore = defineStore('memoApp', () => {
   const categories = ref<MemoCategory[]>([])
@@ -85,8 +149,8 @@ export const useMemoAppStore = defineStore('memoApp', () => {
 
   const refreshFromDb = async () => {
     const [categoryList, memoList] = await Promise.all([fetchAllCategories(), fetchAllMemos()])
-    categories.value = categoryList
-    memos.value = memoList
+    categories.value = sortCategories(categoryList)
+    memos.value = sortMemos(memoList)
   }
 
   const initialize = async () => {
@@ -133,7 +197,7 @@ export const useMemoAppStore = defineStore('memoApp', () => {
 
   const addCategory = async (payload: Partial<MemoCategory>) => {
     const category = await createCategory(payload)
-    categories.value = [...categories.value, category].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    categories.value = sortCategories([...categories.value, category])
     broadcast({ type: 'categories-updated' })
     return category
   }
@@ -143,7 +207,7 @@ export const useMemoAppStore = defineStore('memoApp', () => {
     if (!category) {
       return null
     }
-    categories.value = categories.value.map((item) => (item.id === id ? category : item))
+    categories.value = sortCategories(categories.value.map((item) => (item.id === id ? category : item)))
     broadcast({ type: 'categories-updated', payload: { ids: [id] } })
     return category
   }
@@ -157,7 +221,7 @@ export const useMemoAppStore = defineStore('memoApp', () => {
 
   const addMemo = async (payload: Partial<MemoEntry> & { categoryId: string }) => {
     const memo = await createMemo(payload)
-    memos.value = [...memos.value, memo].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    memos.value = sortMemos([...memos.value, memo])
     broadcast({ type: 'memos-updated' })
     return memo
   }
@@ -167,15 +231,73 @@ export const useMemoAppStore = defineStore('memoApp', () => {
     if (!memo) {
       return null
     }
-    memos.value = memos.value.map((item) => (item.id === id ? memo : item))
+    memos.value = sortMemos(memos.value.map((item) => (item.id === id ? memo : item)))
     broadcast({ type: 'memos-updated', payload: { ids: [id] } })
     return memo
   }
 
   const removeMemo = async (id: string) => {
     await deleteMemo(id)
-    memos.value = memos.value.filter((memo) => memo.id !== id)
+    memos.value = sortMemos(memos.value.filter((memo) => memo.id !== id))
     broadcast({ type: 'memos-updated', payload: { ids: [id] } })
+  }
+
+  const moveMemo = async (params: {
+    memoId: string
+    sourceCategoryId: string
+    targetCategoryId: string
+    targetIndex: number
+  }) => {
+    const { memoId, sourceCategoryId, targetCategoryId, targetIndex } = params
+    const previousState = memos.value.map((item) => ({ ...item }))
+    const localResult = buildLocalMove(memos.value, { memoId, sourceCategoryId, targetCategoryId, targetIndex })
+    if (!localResult) {
+      return
+    }
+
+    const unaffected = memos.value.filter(
+      (memo) =>
+        memo.categoryId !== localResult.sourceCategoryId && memo.categoryId !== localResult.targetCategoryId,
+    )
+    const combined =
+      localResult.sourceCategoryId === localResult.targetCategoryId
+        ? [...localResult.targetMemos, ...unaffected]
+        : [...localResult.sourceMemos, ...localResult.targetMemos, ...unaffected]
+    memos.value = sortMemos(combined)
+
+    try {
+      const persisted = await reorderMemo({
+        memoId,
+        sourceCategoryId,
+        targetCategoryId,
+        targetIndex,
+      })
+      const persistedIds = new Set<string>()
+      persisted.sourceMemos.forEach((memo) => persistedIds.add(memo.id))
+      persisted.targetMemos.forEach((memo) => persistedIds.add(memo.id))
+
+      const persistedUnchanged = memos.value.filter(
+        (memo) =>
+          memo.categoryId !== persisted.sourceCategoryId && memo.categoryId !== persisted.targetCategoryId,
+      )
+      const persistedCombined =
+        persisted.sourceCategoryId === persisted.targetCategoryId
+          ? [...persisted.targetMemos, ...persistedUnchanged]
+          : [...persisted.sourceMemos, ...persisted.targetMemos, ...persistedUnchanged]
+
+      memos.value = sortMemos(persistedCombined)
+      broadcast({
+        type: 'memos-reordered',
+        payload: {
+          ids: Array.from(persistedIds.values()),
+          sourceCategoryId: persisted.sourceCategoryId,
+          targetCategoryId: persisted.targetCategoryId,
+        },
+      })
+    } catch (error) {
+      memos.value = sortMemos(previousState)
+      throw error
+    }
   }
 
   return {
@@ -202,5 +324,6 @@ export const useMemoAppStore = defineStore('memoApp', () => {
     addMemo,
     editMemo,
     removeMemo,
+    moveMemo,
   }
 })

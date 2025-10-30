@@ -1,19 +1,6 @@
 import type { MemoCategory } from '@/shared/types/memo'
-import { extractTags } from '@/shared/utils/tags'
+import { createCategoryEntity, updateCategoryEntity } from '../../domain/category.factory'
 import { getCategoryRepository } from '../ports/category.repository'
-
-const buildCategory = (entity: Partial<MemoCategory>): MemoCategory => {
-  const now = new Date().toISOString()
-  return {
-    id: entity.id ?? crypto.randomUUID(),
-    title: entity.title ?? '',
-    body: entity.body ?? '',
-    icon: entity.icon ?? 'material-symbols:folder-open-rounded',
-    tags: extractTags(`${entity.title ?? ''} ${entity.body ?? ''}`),
-    createdAt: entity.createdAt ?? now,
-    updatedAt: now,
-  }
-}
 
 export const fetchAllCategories = async (): Promise<MemoCategory[]> => {
   const repository = getCategoryRepository()
@@ -22,10 +9,7 @@ export const fetchAllCategories = async (): Promise<MemoCategory[]> => {
 
 export const createCategory = async (payload: Partial<MemoCategory>): Promise<MemoCategory> => {
   const repository = getCategoryRepository()
-  const category = buildCategory({
-    ...payload,
-    tags: extractTags(`${payload.title ?? ''} ${payload.body ?? ''}`),
-  })
+  const category = createCategoryEntity(payload)
   return repository.create(category)
 }
 
@@ -39,12 +23,7 @@ export const updateCategory = async (
     return null
   }
 
-  const next: MemoCategory = {
-    ...current,
-    ...payload,
-    tags: extractTags(`${payload.title ?? current.title} ${payload.body ?? current.body}`),
-    updatedAt: new Date().toISOString(),
-  }
+  const next = updateCategoryEntity(current, payload)
   return repository.update(next)
 }
 

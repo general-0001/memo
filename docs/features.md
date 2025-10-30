@@ -237,7 +237,7 @@
 ### 4.5 データ契約 / 永続化
 - IndexedDB `memo_app_v1`:
   - `categories`: `{ id, title, body, icon, tags[], createdAt, updatedAt }`
-  - `memos`: `{ id, categoryId, title, body, icon, tags[], createdAt, updatedAt }`
+  - `memos`: `{ id, categoryId, title, body, icon, tags[], sortOrder, createdAt, updatedAt }`
   - `settings`: `{ id:'app', sampleSeeded, lastSync }`
 - Dexieを利用し、CRUDユースケースは `app/features/*/application` 層に配置。Dexieアダプタは `app/features/{categories|memos}/infrastructure` で `registerDexie*Repository` として公開し、`app/plugins/memo.client.ts` で起動時にポートへ注入する。タグは `shared/utils/tags.ts` で `#word` を正規表現抽出。
 
@@ -247,6 +247,7 @@
 - 検索ロジック: カテゴリー／メモ双方のタイトル・本文に部分一致。メモヒットゼロのカテゴリーは非表示。空結果時は「データがありません」表示。
 - 検索ハイライト: 一覧およびメモ/カテゴリー詳細の表示モードで一致箇所を `<mark class="app_searchHighlight">` で強調し、クエリの大文字小文字は無視する。
 - 一覧UI: カテゴリー行をクリックで `/categories/{id}` 詳細へ遷移し、ヘッダーやメモ行はホバー状態で視覚的フィードバック（フェード＋補助アイコン）を表示。
+- 並び替え: メモはドラッグ&ドロップで同一カテゴリー内および別カテゴリーへ移動でき、`sortOrder` に保存する（キーボード操作は同一カテゴリー内の並び替えをサポート）。
 - 削除操作: 新規作成画面では削除ボタンを表示せず、既存カテゴリ/メモのみ削除可能。
 - 必須入力なし。空セルは定型文メッセージで可視化。
 

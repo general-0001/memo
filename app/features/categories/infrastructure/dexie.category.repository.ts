@@ -1,5 +1,5 @@
 import type { MemoCategory } from '@/shared/types/memo'
-import { useMemoDexie } from '@/features/app/infrastructure/memoDexie.client'
+import { useMemoDexie } from '@/shared/infrastructure/memoDexie.client'
 import { setCategoryRepository, type CategoryRepositoryPort } from '../application/ports/category.repository'
 
 const createDexieCategoryRepository = (): CategoryRepositoryPort => ({

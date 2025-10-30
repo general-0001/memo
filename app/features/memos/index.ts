@@ -4,6 +4,7 @@ export {
   createMemo,
   updateMemo,
   deleteMemo,
+  reorderMemo,
 } from './application/services/memo.service'
 
 export { default as AppPanelMemoCatalog } from './presentation/components/AppPanelMemoCatalog.vue'

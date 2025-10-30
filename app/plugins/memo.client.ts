@@ -1,10 +1,8 @@
 import { useMemoAppStore } from '@/features/app'
-import { registerDexieCategoryRepository } from '@/features/categories/infrastructure'
-import { registerDexieMemoRepository } from '@/features/memos/infrastructure'
+import { registerMemoInfrastructure } from '@/composition/registerMemoInfrastructure'
 
-export default defineNuxtPlugin(() => {
-  registerDexieCategoryRepository()
-  registerDexieMemoRepository()
+export default defineNuxtPlugin(async () => {
+  await registerMemoInfrastructure()
   const store = useMemoAppStore()
-  store.initialize()
+  await store.initialize()
 })

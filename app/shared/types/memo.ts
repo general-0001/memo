@@ -17,6 +17,7 @@ export interface MemoEntry {
   body: string
   icon: string
   tags: string[]
+  sortOrder: number
   createdAt: string
   updatedAt: string
 }
