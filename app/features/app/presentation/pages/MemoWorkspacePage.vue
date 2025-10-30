@@ -10,7 +10,30 @@ const store = useMemoAppStore()
   <div class="app_display flex flex-col gap-2 p-2 min-h-0 text-sm flex-1">
     <AppPanelSearch />
     <AppPanelAddCategory />
-    <AppPanelMemoCatalog />
+    <ClientOnly>
+      <template #placeholder>
+        <div class="app_panelMemoCatalog flex-1 min-h-0 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col gap-4 p-4 text-slate-500">
+          <div class="flex items-center gap-3 animate-pulse">
+            <div class="h-10 w-10 rounded-full bg-slate-200" />
+            <div class="flex-1 h-4 rounded bg-slate-200" />
+          </div>
+          <div class="grid gap-3">
+            <div v-for="index in 3" :key="index" class="flex items-center gap-3 animate-pulse">
+              <div class="h-10 w-10 rounded-lg bg-slate-200" />
+              <div class="flex-1 h-4 rounded bg-slate-200" />
+            </div>
+          </div>
+          <div class="flex items-center gap-2 animate-pulse">
+            <div class="h-5 w-5 rounded-full bg-slate-200" />
+            <div class="flex-1 h-4 rounded bg-slate-200" />
+          </div>
+          <div class="flex justify-center text-xs tracking-wide uppercase">
+            ローカルデータを読み込んでいます…
+          </div>
+        </div>
+      </template>
+      <AppPanelMemoCatalog v-if="store.initialized" />
+    </ClientOnly>
   </div>
 
   <transition name="app_fade">

@@ -83,6 +83,7 @@ export const useMemoAppStore = defineStore('memoApp', () => {
   const activeView = ref<PanelView>('catalog')
   const loading = ref(false)
   const errorMessage = ref<string | null>(null)
+  const initialized = ref(false)
 
   let unsubscribe: (() => void) | null = null
   let channelInstance: MemoSyncChannel | null =
@@ -154,7 +155,7 @@ export const useMemoAppStore = defineStore('memoApp', () => {
   }
 
   const initialize = async () => {
-    if (process.server || loading.value || categories.value.length > 0) {
+    if (process.server || loading.value || initialized.value) {
       return
     }
     loading.value = true
@@ -162,6 +163,7 @@ export const useMemoAppStore = defineStore('memoApp', () => {
       await seedMemoWorkspaceData()
       await refreshFromDb()
       setupChannel()
+      initialized.value = true
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : String(error)
     } finally {
@@ -308,6 +310,7 @@ export const useMemoAppStore = defineStore('memoApp', () => {
     activeView,
     loading,
     errorMessage,
+    initialized,
     // getters
     filteredCategories,
     allTags,

@@ -88,33 +88,39 @@ tests/             # Vitest（unit / e2e）
    - `reorderMemo()` を拡張し、`sourceCategoryId` / `targetCategoryId` / `targetIndex` を入力とする。  
    - Dexie Repository に `updateMany()` トランザクションと `getHighestSortOrder()` を追加。
    - Broadcast イベント payload にカテゴリー情報を付加し、全タブ同期を向上。
-2. **インフラ再編**  
+2. **同期フォールバック**  
+   - BroadcastChannel 非対応ブラウザ向けに `localStorage` の `storage` イベントを利用したフォールバックチャネルを実装。  
+   - `createMemoSyncChannel()` が利用可能なチャネル（Broadcast → Storage）の順に選択。
+3. **SSR ローディングプレースホルダ**  
+   - `MemoWorkspacePage` を `ClientOnly` + スケルトンUIでラップし、SSR 時はプレースホルダのみを描画、クライアント初期化後に実データへ差し替えることで hydration mismatch を解消。  
+   - Pinia ストアに `initialized` フラグを追加し、1 度の初期化でステータスを共有。  
+4. **インフラ再編**  
    - Dexie クライアントを `shared/infrastructure` へ移設し、`registerMemoInfrastructure()` に集約。  
    - `ensureMemoSortOrder()` で v1 → v2 のマイグレーションを安全に実施。
-3. **ドメインレイヤ確立**  
+5. **ドメインレイヤ確立**  
    - メモ/カテゴリーのファクトリを導入し、タグ抽出・デフォルトアイコン・更新日時の責務を集約。
-4. **UI 改修**  
+6. **UI 改修**  
    - カテゴリー全体がドロップ対象となるよう `AppPanelMemoCatalog` を改修（空カテゴリーでも受入可、視覚フィードバック強化）。  
    - キーボード操作は従来の同一カテゴリ内並び替えを維持。
-5. **ドキュメント/テスト**  
+7. **ドキュメント/テスト**  
    - `docs/features.md` を最新仕様（クロスカテゴリー D&D）へ更新。  
-   - 新規ユニットテスト `tests/unit/memo.service.spec.ts` で同一/別カテゴリーパスを検証。  
+   - 新規ユニットテスト `tests/unit/memo.service.spec.ts` / `tests/unit/memo.sync.service.spec.ts` で並び替えと同期フォールバックを検証。  
    - `pnpm vitest run tests/unit`, `pnpm typecheck` を実行済み。
 
 ---
 
 ## 8. 現在の差分（未コミット）
-- 主要ロジック: `app/features/app/application/stores/memoApp.store.ts`, `app/features/memos/application/services/memo.service.ts`, `app/features/memos/infrastructure/dexie.memo.repository.ts`, `app/features/memos/presentation/components/AppPanelMemoCatalog.vue`
-- 共通インフラ: `app/shared/infrastructure/memoDexie.client.ts`, `app/composition/registerMemoInfrastructure.ts`
+- 主要ロジック: `app/features/app/application/stores/memoApp.store.ts`, `app/features/app/presentation/pages/MemoWorkspacePage.vue`, `app/features/memos/application/services/memo.service.ts`, `app/features/memos/infrastructure/dexie.memo.repository.ts`, `app/features/memos/presentation/components/AppPanelMemoCatalog.vue`
+- 共通インフラ: `app/shared/infrastructure/memoDexie.client.ts`, `app/composition/registerMemoInfrastructure.ts`, `app/features/app/infrastructure/memoStorage.channel.ts`, `app/features/app/application/services/memoSync.service.ts`
 - ドメイン: `app/features/memos/domain/memo.factory.ts`, `app/features/categories/domain/category.factory.ts`
-- ドキュメント/テスト: `docs/features.md`, `docs/handover.md`, `tests/unit/memo.service.spec.ts`
+- ドキュメント/テスト: `docs/features.md`, `docs/handover.md`, `tests/unit/memo.service.spec.ts`, `tests/unit/memo.sync.service.spec.ts`
 - 旧ファイル削除: `app/features/app/infrastructure/memoDexie.client.ts`
 
 ---
 
 ## 9. テスト / 検証状況
 - `pnpm typecheck` ✅
-- `pnpm vitest run tests/unit` ✅（5 テスト）
+- `pnpm vitest run tests/unit` ✅（6 テスト）
 - 手動確認（推奨継続）
   1. クロスカテゴリー D&D → 並び順保持 → リロード後の確認
   2. 複数タブでのリアルタイム同期
@@ -123,7 +129,7 @@ tests/             # Vitest（unit / e2e）
 ---
 
 ## 10. オープン課題 / リスク
-1. **BroadcastChannel 非対応ブラウザ**: 現状フォールバックなし。StorageEvent 等を用いた代替同期検討が必要。
+1. **同期フォールバックの限界**: BroadcastChannel 非対応時は localStorage フォールバックで同期するが、storage イベントが無効な環境（Safari プライベートモード等）では動作保証がない。代替手段（IndexedDB ポーリング等）の検討余地あり。
 2. **E2E 自動化未整備**: Playwright による D&D とタブ同期の自動テストが未実装。
 3. **エクスポート/インポート欠如**: IndexedDB データのバックアップ手段がない。
 4. **UX/アクセシビリティ**: カテゴリー跨ぎのキーボード操作、エラー表示、フォームバリデーションは今後の改善対象。
@@ -133,7 +139,7 @@ tests/             # Vitest（unit / e2e）
 
 ## 11. 推奨次ステップ
 1. Playwright で D&D + タブ同期を含むシナリオを自動化。
-2. BroadcastChannel フォールバック方針の決定と実装。
+2. localStorage フォールバックの動作検証（Safari プライベートモード等）と代替手段の検討。
 3. `moveMemo` のキーボード操作でのカテゴリ跨ぎサポート検討（アクセシビリティ強化）。
 4. Dexie Repository の追加ユニットテスト（空カテゴリー、連続移動など）整備。
 5. エクスポート/インポート仕様策定と PoC 作成。
