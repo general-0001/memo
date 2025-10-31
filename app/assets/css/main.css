@@ -19,6 +19,16 @@
     @apply bg-amber-200/60 text-inherit rounded px-0.5;
   }
 
+  .memo-page-fade-enter-active,
+  .memo-page-fade-leave-active {
+    @apply transition-opacity duration-300 ease-in-out;
+  }
+
+  .memo-page-fade-enter-from,
+  .memo-page-fade-leave-to {
+    @apply opacity-0;
+  }
+
   .app_fade-enter-active,
   .app_fade-leave-active {
     @apply transition-opacity duration-200;

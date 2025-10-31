@@ -5,6 +5,10 @@ export default defineNuxtConfig({
   ssr: false,
   app: {
     baseURL: '/memo/',
+    pageTransition: {
+      name: 'memo-page-fade',
+      mode: 'out-in',
+    },
   },
   modules: ['@pinia/nuxt', '@vueuse/nuxt', '@nuxt/icon'],
   devtools: {

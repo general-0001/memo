@@ -6,15 +6,15 @@
 
 ## 1. スナップショット
 - **プロジェクト**: Memo Workspace（Nuxt 4 + Tailwind v4 + Pinia + Dexie/IndexedDB）
-- **開発ブランチ**: `memo/work-1`（`origin/memo/work-1` と同期済み、ローカル未変更）
+- **開発ブランチ**: `memo/work-1`（本コミット時点で `origin/memo/work-1` に対し 1 コミット ahead。グローバルページフェード対応/テンプレート調整を含む）
 - **公開ブランチ**: `gh-pages`（`.output/public` の静的成果物を反映済み）
 - **フェーズ**: In Dev（主要 UI/データフロー完成。エクスポートや高度バリデーションは未実装）
 - **公開状態**: GitHub Pages で静的ホスティング可能。URL 想定値 `https://general-0001.github.io/memo/`（Pages 設定の有効化はリポジトリ側で実施が必要）
 - **目的**: IndexedDB を利用したブラウザ完結のメモ/カテゴリー管理。リアクティブ編集・タグ抽出・複数タブ同期に対応。
-- **スコープ**: メモ一覧 (`AppPanelMemoCatalog`)、検索/タグ抽出、メモ&カテゴリー CRUD、ドラッグ&ドロップ並び替え（クロスカテゴリー対応）、BroadcastChannel 同期、自動保存。
+- **スコープ**: メモ一覧 (`AppPanelMemoCatalog`)、検索/タグ抽出、メモ&カテゴリー CRUD、ドラッグ&ドロップ並び替え（クロスカテゴリー対応）、BroadcastChannel 同期、自動保存、ルート遷移の 300ms フェードアニメーション。
 - **非対象**: サーバー永続化、認証、多ユーザー協調、外部 API、CSV/JSON エクスポート、詳細バリデーション。
 - **制約**: Nuxt 4.2.0 / Vue 3.5.22 / Pinia 3.0.3 / Dexie 4.2.1 / Tailwind 4.1.16 / Material Symbols。UI 構造は `template.html` の `app_*` クラスに準拠。
-- **主要ドキュメント**: `docs/architecture/structure-hybrid.md`, `docs/features.md#feat-feat-100`, `docs/plan-setup.md`, `docs/plan-refactoring.md`, 本 `handover.md`。
+- **主要ドキュメント**: `docs/architecture/structure-hybrid.md`, `docs/features.md#feat-feat-100`（2025-11-01 更新）、`docs/plan-setup.md`, `docs/plan-refactoring.md`, 本 `handover.md`。
 
 ---
 
@@ -87,24 +87,25 @@ tests/             # Vitest (unit / e2e)
    メモ/カテゴリー詳細画面は 500ms デバウンスで自動保存し、保存中/完了/エラーをヘッダーで可視化。エラー時は再試行ボタンで復旧可能。
 7. **ローディング UX**  
    `MemoWorkspacePage.vue` は SPA でも `ClientOnly` プレースホルダに骨組み UI を表示し、IndexedDB 読み込み完了後に実データへ切り替える。
+8. **ルート遷移アニメーション**  
+   `nuxt.config.ts` の `app.pageTransition` により全ページが 300ms のフェード（`out-in`）で切り替わり、一覧↔詳細のトランジションを統一。`app/assets/css/main.css` で `memo-page-fade-*` ユーティリティを定義。
 
 ---
 
-## 7. 直近の主要変更（2025-10-31）
-1. **GitHub Pages 対応**  
-   - `nuxt.config.ts` に `ssr: false`, `app.baseURL = '/memo/'`, `nitro.preset = 'github_pages'` を追加。静的ホスティング前提に変更。  
-   - `pnpm generate` で `.output/public` を生成し、`gh-pages` ブランチへ静的資産を配置。
-2. **デプロイ・リモート設定**  
-   - リポジトリ `https://github.com/general-0001/memo.git` に `memo/work-1`（開発）と `gh-pages`（公開）を推送。  
-   - GitHub Pages の有効化 API は PAT 権限不足で 403。リポジトリ設定画面での手動有効化が必要。
-3. **ドキュメント整理**  
-   - `docs/features.md` の SSR 記述を SPA 対応に更新。  
-   - 本ハンドオーバーを全面刷新（構造/作業履歴/タスク/デプロイ手順を統合）。
+## 7. 直近の主要変更
+- **2025-11-01**
+  - `nuxt.config.ts` に `app.pageTransition`（`memo-page-fade`, 300ms, `out-in`）を追加し、`app/assets/css/main.css` と `MemoWorkspacePage.vue` を調整して全ページ遷移をフェード化。Nuxt のマルチルート警告を解消。
+  - Playwright MCP で一覧↔カテゴリー詳細の遷移を実機検証し、フェードの発火と警告非発生を確認。`docs/features.md` FEAT-100 に新仕様/テスト結果を追記。
+  - 本ハンドオーバーを更新し、最新の UI/テスト状況と差分情報を反映。
+- **2025-10-31**
+  - `nuxt.config.ts` に `ssr: false`, `app.baseURL = '/memo/'`, `nitro.preset = 'github_pages'` を設定し GitHub Pages 配信へ対応。`pnpm generate` の成果物を `gh-pages` ブランチで管理。
+  - リポジトリ `https://github.com/general-0001/memo.git` に `memo/work-1`（開発）/`gh-pages`（公開）を作成。Pages API は権限不足のため UI での有効化が必要。
+  - `docs/features.md` と `docs/handover.md` を SPA 前提へ全面更新。
 
 ---
 
 ## 8. 現在の差分 / ブランチ状況
-- `memo/work-1`：ローカルもリモートもクリーン。追加作業は新ブランチの切り出し推奨。
+- `memo/work-1`：ローカルはフェード遷移対応を含む 1 コミット ahead（未 push）。追加作業は本コミットをベースに新ブランチ切り出し推奨。
 - `gh-pages`：静的成果物のみを管理する公開ブランチ。必要に応じて `git worktree add -B gh-pages .gh-pages` で再利用可能。
 - `.output` / `dist`：生成済み静的ファイルは git 管理外（ビルド毎に再生成）。
 
@@ -113,8 +114,8 @@ tests/             # Vitest (unit / e2e)
 ## 9. テスト / ビルド状況
 - **生成**: `pnpm generate`（2025-10-31 実行済み）  
   - Rollup から `useMemoAppStore` 再エクスポートに伴う chunk 循環警告あり（機能上は動作するが改善推奨）。
-- **Typecheck / Unit Test**: 今セッションでは未再実行。前回 2025-10-28 時点で `pnpm typecheck`, `pnpm vitest run tests/unit` が成功。変更後の再検証を推奨。
-- **E2E**: 自動化テスト未整備。手動確認は必要に応じて Playwright MCP で実施。
+- **Typecheck / Unit Test**: 本日（2025-11-01）時点でも未再実行。前回 2025-10-28 に `pnpm typecheck`, `pnpm vitest run tests/unit` が成功しており、フェード対応後の再検証が必要。
+- **E2E**: 自動化テスト未整備。2025-11-01 に Playwright MCP で一覧↔カテゴリー詳細遷移・フェード挙動・警告ログ非発生を確認。継続的回帰検知のため自動化整備が必要。
 
 ---
 
@@ -167,4 +168,4 @@ pnpm vitest run tests/unit
 
 ---
 
-本レポート更新日: 2025-10-31  
+本レポート更新日: 2025-11-01  
