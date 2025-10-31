@@ -403,7 +403,7 @@ onUnmounted(() => {
         <div class="relative">
           <button
             ref="iconButtonRef"
-            class="app_memoIconEdit app_iconWrap py-1.5 text-2xl cursor-pointer flex items-center"
+            class="app_memoIconEdit app_iconWrap py-1.5 text-2xl cursor-pointer flex items-center opacity-100 hover:opacity-50 transition-opacity"
             type="button"
             @click="showIconPopover = !showIconPopover"
           >
@@ -503,7 +503,7 @@ onUnmounted(() => {
         <AppPanelAutoSaveStatus :state="autoSaveState" :error-message="autoSaveError" @retry="handleRetry" />
         <button
           type="button"
-          class="p-2 rounded-lg bg-slate-800 text-white disabled:opacity-50 cursor-pointer"
+          class="p-2 rounded-lg bg-slate-800 text-white disabled:opacity-50 cursor-pointer opacity-100 hover:opacity-80 transition-opacity"
           @click="completeAndReturn"
           :disabled="isSaving || pending"
         >
@@ -519,10 +519,10 @@ onUnmounted(() => {
         <p>カテゴリーを削除すると所属するメモも削除されます。続行しますか？</p>
       </template>
       <template #footer>
-        <button type="button" class="p-2 rounded-lg bg-white border border-slate-200 cursor-pointer" @click="showDeleteModal = false">キャンセル</button>
+        <button type="button" class="p-2 rounded-lg text-slate-600 bg-slate-200 border border-slate-300 cursor-pointer opacity-100 hover:opacity-80 transition-opacity" @click="showDeleteModal = false">キャンセル</button>
         <button
           type="button"
-          class="p-2 rounded-lg bg-rose-600 text-white disabled:opacity-60 cursor-pointer"
+          class="p-2 rounded-lg bg-rose-600 text-white disabled:opacity-60 cursor-pointer opacity-100 hover:opacity-80 transition-opacity"
           @click="confirmDeletion"
           :disabled="pending"
         >

@@ -508,7 +508,7 @@ onUnmounted(() => {
         <div class="relative">
           <button
             ref="iconButtonRef"
-            class="app_memoIconEdit app_iconWrap py-1.5 text-2xl cursor-pointer flex items-center"
+            class="app_memoIconEdit app_iconWrap py-1.5 text-2xl cursor-pointer flex items-center opacity-100 hover:opacity-50 transition-opacity"
             type="button"
             @click="showIconPopover = !showIconPopover"
           >
@@ -549,7 +549,7 @@ onUnmounted(() => {
         <div class="app_panelMemoDetailSet flex flex-col flex-1 min-h-0 space-y-2 overflow-hidden">
           <div
             v-if="!isTitleEditing"
-            class="app_panelMemoDetailTitleDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200 overflow-x-auto"
+            class="app_panelMemoDetailTitleDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text transition-colors focus:outline-none overflow-x-auto"
             role="button"
             tabindex="0"
             aria-label="メモのタイトルを編集"
@@ -566,14 +566,14 @@ onUnmounted(() => {
             v-else
             ref="titleInputRef"
             v-model="memoForm.title"
-            class="app_panelMemoDetailTitle w-full border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-slate-200 break-all"
+            class="app_panelMemoDetailTitle w-full border border-slate-200 rounded-lg p-2 focus:outline-none break-all"
             placeholder="メモのタイトル"
             @blur="finishTitleEditing"
             @keydown="handleTitleInputKeydown"
           />
           <div
             v-if="!isBodyEditing"
-            class="app_panelMemoDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 flex-1 min-h-0 overflow-y-auto transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200 break-all"
+            class="app_panelMemoDetailParagraphDisplay w-full border border-slate-200 rounded-lg p-2 cursor-text whitespace-pre-wrap min-h-32 flex-1 min-h-0 overflow-y-auto transition-colors focus:outline-none break-all"
             role="button"
             tabindex="0"
             aria-label="メモの内容を編集"
@@ -591,7 +591,7 @@ onUnmounted(() => {
             ref="bodyTextareaRef"
             v-model="memoForm.body"
             rows="6"
-            class="app_panelMemoDetailParagraph w-full border border-slate-200 rounded-lg p-2 flex-1 min-h-0 overflow-y-auto focus:outline-none focus:ring-2 focus:ring-slate-200"
+            class="app_panelMemoDetailParagraph w-full border border-slate-200 rounded-lg p-2 flex-1 min-h-0 overflow-y-auto focus:outline-none"
             placeholder="メモの内容"
             @blur="finishBodyEditing"
             @keydown="handleBodyInputKeydown"
@@ -603,7 +603,7 @@ onUnmounted(() => {
         <AppPanelAutoSaveStatus :state="autoSaveState" :error-message="autoSaveError" @retry="handleRetry" />
         <button
           type="button"
-          class="p-2 rounded-lg bg-slate-800 text-white disabled:opacity-50 cursor-pointer"
+          class="p-2 rounded-lg bg-slate-800 text-white disabled:opacity-50 cursor-pointer opacity-100 hover:opacity-80 transition-opacity"
           @click="completeAndReturn"
           :disabled="isSaving"
         >
@@ -620,10 +620,10 @@ onUnmounted(() => {
         <p>この操作は取り消せません。削除してもよろしいですか？</p>
       </template>
       <template #footer>
-        <button type="button" class="p-2 rounded-lg bg-white border border-slate-200 cursor-pointer" @click="showDeleteModal = false">キャンセル</button>
+        <button type="button" class="p-2 rounded-lg text-slate-600 bg-slate-200 border border-slate-300 cursor-pointer opacity-100 hover:opacity-80 transition-opacity" @click="showDeleteModal = false">キャンセル</button>
         <button
           type="button"
-          class="p-2 rounded-lg bg-rose-600 text-white disabled:opacity-60 cursor-pointer"
+          class="p-2 rounded-lg bg-rose-600 text-white disabled:opacity-60 cursor-pointer opacity-100 hover:opacity-80 transition-opacity"
           @click="confirmDeletion"
           :disabled="pending"
         >
