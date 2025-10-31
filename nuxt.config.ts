@@ -2,6 +2,10 @@ import { defineNuxtConfig } from 'nuxt/config'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
+  ssr: false,
+  app: {
+    baseURL: '/memo/',
+  },
   modules: ['@pinia/nuxt', '@vueuse/nuxt', '@nuxt/icon'],
   devtools: {
     enabled: true,
@@ -23,6 +27,9 @@ export default defineNuxtConfig({
       collections: ['material-symbols'],
     },
     mode: 'css',
+  },
+  nitro: {
+    preset: 'github_pages',
   },
   typescript: {
     strict: true,
